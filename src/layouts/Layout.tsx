@@ -18,11 +18,11 @@ export default function Layout() {
             {/* Body */}
             <div className="flex-1 min-h-screen bg-slate-50/50 overflow-y-auto">
                 <Routes>
+                    <Route path="/login" element={<Login />} />
                     <Route path="/" element={<Navigate to="/login" replace />} />
                     <Route path="/landing" element={<Landing />} />
                     <Route path="/transactions" element={<Transactions />} />
                     <Route path="/withdrawal" element={<Withdrawal />} />
-                    <Route path="/login" element={<Login />} />
                 </Routes>
             </div>
         </div>
