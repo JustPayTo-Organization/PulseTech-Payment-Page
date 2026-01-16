@@ -66,6 +66,10 @@ export default function Sidebar() {
         setShowChangePass((prev) => !prev);
     };
     
+    const handleChangePass = () => {
+        navigate("/changepass");
+    }
+
     return (
         <>
             {/* Hamburger Button on small screens */}
@@ -130,7 +134,7 @@ export default function Sidebar() {
 
                 {showChangePass && (
                     <button
-                        onClick={() => alert("Redirect to change password")}
+                        onClick={handleChangePass}
                         className="bg-white text-gray-800 px-4 py-3 rounded-xl 
                         shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)]
                         border border-gray-300/50
