@@ -341,24 +341,24 @@ const Transactions: React.FC = () => {
                 </div>
 
                 {/* Action Buttons Grid on Mobile */}
-                <div className="grid grid-cols-2 md:flex gap-2 items-center border-t md:border-t-0 pt-3 md:pt-0 border-slate-100">
+                <div className="grid grid-cols-2 md:flex md:flex-1 xl:flex-1 gap-2 items-center border-t md:border-t-0 pt-3 md:pt-0 border-slate-100">
 
                     <button
                         onClick={handleApplyFilters}
-                        className="bg-cyan-500 text-white px-4 py-2 rounded-md hover:bg-cyan-600 transition font-semibold text-sm h-10 shadow-sm w-full md:flex-1 xl:shrink-0"
+                        className="bg-cyan-500 text-white px-4 py-2 rounded-md hover:bg-cyan-600 transition font-semibold text-sm h-10 shadow-sm w-full md:flex-1"
                     >
                         Filter
                     </button>
 
                     <button
                         onClick={handleClearFilters}
-                        className="text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 transition-colors px-4 py-2 rounded-md font-semibold text-sm h-10 flex items-center justify-center gap-1 shadow-sm w-full md:flex-1 xl:shrink-0"
+                        className="text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 transition-colors px-4 py-2 rounded-md font-semibold text-sm h-10 flex items-center justify-center gap-1 shadow-sm w-full md:flex-1"
                     >
                         <RxCross2 /> Clear
                     </button>
 
                     {/* Download Button - Spans full width on mobile grid if needed */}
-                    <div ref={downloadDropdownRef} className="relative col-span-2 w-full md:flex-1 xl:shrink-0">
+                    <div ref={downloadDropdownRef} className="relative col-span-2 w-full md:flex-1">
                         <button
                             onClick={() => setDownloadMenuOpen(prev => !prev)}
                             className="relative w-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-md shadow-sm transition font-semibold text-sm h-10 flex justify-center items-center"
@@ -379,7 +379,7 @@ const Transactions: React.FC = () => {
                                     onClick={() => navigate("/download-queue", { state: { downloadQueue } })}
                                     className="w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 text-slate-700"
                                 >
-                                    View Download Queue
+                                    View Queue
                                 </button>
                             </div>
                         )}
