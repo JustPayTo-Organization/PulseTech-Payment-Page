@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import { IoMdPerson, IoMdLock } from "react-icons/io";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 
@@ -11,7 +11,6 @@ const Login: React.FC = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
-
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -56,8 +55,8 @@ const Login: React.FC = () => {
             <div className="flex flex-col items-center mb-10 animate-fade-in-up opacity-0" style={{ animationDelay: '0.1s' }}>
             <div className="bg-white p-4 rounded-3xl shadow-sm mb-4 border border-slate-100 transition-transform hover:scale-105 duration-500">
                 <img
-                src="/PulseTechLogoV1-nobg.png"
-                alt="PulseTech Logo"
+                src="/pulsetechlogov2.png"
+                alt="PulseTech Logov2"
                 className="w-16 h-16 object-contain"
                 />
             </div>

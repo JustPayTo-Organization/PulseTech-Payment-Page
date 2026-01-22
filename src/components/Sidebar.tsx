@@ -96,9 +96,9 @@ export default function Sidebar() {
                 {/* Logo */}
                 <div className="flex items-center justify-center gap-3 mb-6">
                     <img
-                        src="/PulseTechLogoV1-nobg.png"
-                        alt="PulseTech Logo"
-                        className="w-32 h-32 object-contain"
+                        src="/pulsetechlogov2.png"
+                        alt="PulseTech Logov2"
+                        className="w-20 h-20 object-contain"
                     />
                 </div>
 
@@ -120,7 +120,7 @@ export default function Sidebar() {
                                 onClick={() => setMobileOpen(false)} // close sidebar on mobile click
                             >
                                 <Icon
-                                    className={`text-4xl transition-colors rounded ${
+                                    className={`text-2xl transition-colors rounded ${
                                         item.path === window.location.pathname
                                             ? "text-white bg-blue-400 p-1"
                                             : "bg-gray-100 text-gray-400 group-hover:text-sky-500"
@@ -147,7 +147,7 @@ export default function Sidebar() {
                     </button>
                 )}
 
-                <div ref={clientRef} className="mt-auto bg-[#132440] rounded-lg p-5">
+                <div ref={clientRef} className="mt-auto bg-[#132440] rounded-lg p-3">
                     
                     <div className="flex items-center gap-3 px-3 mb-3" >
                         <div 

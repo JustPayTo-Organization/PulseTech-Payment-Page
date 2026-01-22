@@ -68,6 +68,7 @@ const Transactions: React.FC = () => {
     const [typeInput, setTypeInput] = useState("");
     const [notification, setNotification] = useState<string | null>(null);
     const downloadDropdownRef = useRef<HTMLDivElement | null>(null);
+    const [isDownloading, setIsDownloading] = useState(false);
 
     const today = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
     const [dateInput, setDateInput] = useState(today);
@@ -94,26 +95,36 @@ const Transactions: React.FC = () => {
     };
 
     const handleQueueDownload = () => {
+        if (isDownloading) return;
+
         if (currentTransactions.length === 0) return;
 
-        const job: DownloadJob = {
-            id: `job-${Date.now()}`,
-            name: `transactions_page_${currentPage}_${new Date().toISOString().slice(0,10)}.xlsx`,
-            status: "ready",
-            transactions: [...currentTransactions],
-            createdAt: new Date().toISOString(),
+        setIsDownloading(true);
+        
+        try{
+            const job: DownloadJob = {
+                id: `job-${Date.now()}`,
+                name: `transactions_page_${currentPage}_${new Date().toISOString().slice(0,10)}.xlsx`,
+                status: "ready",
+                transactions: [...currentTransactions],
+                createdAt: new Date().toISOString(),
+            };
+
+            // Merge with existing localStorage queue
+            const savedQueue = localStorage.getItem('downloadQueue');
+            const existingJobs: DownloadJob[] = savedQueue ? JSON.parse(savedQueue) : [];
+            const updatedJobs = [...existingJobs, job];
+            localStorage.setItem('downloadQueue', JSON.stringify(updatedJobs));
+
+            // Optional: notification
+            setNotification(`Download queued: ${job.name}`);
+            setTimeout(() => setNotification(null), 4000);
+        }catch(err){
+            console.error("Download failed", err);
+        }finally {
+            setTimeout(() => setIsDownloading(false), 4000);
+        }
         };
-
-        // Merge with existing localStorage queue
-        const savedQueue = localStorage.getItem('downloadQueue');
-        const existingJobs: DownloadJob[] = savedQueue ? JSON.parse(savedQueue) : [];
-        const updatedJobs = [...existingJobs, job];
-        localStorage.setItem('downloadQueue', JSON.stringify(updatedJobs));
-
-        // Optional: notification
-        setNotification(`Download queued: ${job.name}`);
-        setTimeout(() => setNotification(null), 4000);
-    };
 
     const handleApplyFilters = () => {
         setAppliedStatus(statusInput);
@@ -382,8 +393,13 @@ const Transactions: React.FC = () => {
                         {downloadMenuOpen && (
                             <div className="absolute right-0 top-full mb-2 md:bottom-auto md:mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-xl z-50 py-1">
                                 <button
+                                    disabled={isDownloading}
                                     onClick={() => { handleQueueDownload(); setDownloadMenuOpen(false); }}
-                                    className="w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 text-slate-700 border-b border-slate-50 "
+                                    className={`w-full text-left px-4 py-2.5 text-sm border-b border-slate-50 ${
+                                        isDownloading
+                                            ? "opacity-50 cursor-not-allowed text-slate-400"
+                                            : "hover:bg-slate-50 text-slate-700"
+                                        }`}
                                 >
                                     Queue Download
                                 </button>
@@ -491,72 +507,70 @@ const Transactions: React.FC = () => {
         </div>
 
         {modalOpen && selectedTransaction && (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-        <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            
-            {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                <div>
-                    <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Transaction Details</h2>
-                    {/* OPTION 1: Sub-header (Uncomment if you want it at the top) */}
-                    {/* <p className="text-[10px] text-slate-400 font-mono mt-0.5">{selectedTransaction.id}</p> */}
-                </div>
-                <button
-                    onClick={closeModal}
-                    className="p-1.5 rounded-full hover:bg-slate-200 text-slate-500 transition-colors"
-                >
-                    <RxCross2 size={20} />
-                </button>
-            </div>
-
-            <div className="p-6">
-                {/* Primary Info: Amount & Status */}
-                <div className="text-center mb-8">
-                    <p className="text-xs font-medium text-slate-400 uppercase mb-1">Total Amount</p>
-                    <div className={`text-3xl font-bold ${selectedTransaction.type === "Cash In" ? "text-emerald-600" : "text-slate-900"}`}>
-                        {selectedTransaction.type === "Cash In" ? "+" : "-"}₱{selectedTransaction.amount.toLocaleString()}
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+                
+                {/* Modal Header */}
+                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                    <div>
+                        <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Transaction Details</h2>
+                        {/* OPTION 1: Sub-header (Uncomment if you want it at the top) */}
+                        {/* <p className="text-[10px] text-slate-400 font-mono mt-0.5">{selectedTransaction.id}</p> */}
                     </div>
-                    <div className="mt-3 flex justify-center">
-                        <span className={`px-4 py-1 rounded-full text-[11px] font-bold border ${getStatusClass(selectedTransaction.status)}`}>
-                            {selectedTransaction.status}
-                        </span>
-                    </div>
+                    <button
+                        onClick={closeModal}
+                        className="p-1.5 rounded-full hover:bg-slate-200 text-slate-500 transition-colors"
+                    >
+                        <RxCross2 size={20} />
+                    </button>
                 </div>
 
-                {/* Details Grid */}
-                <div className="grid grid-cols-1 gap-y-4">
-                    {[
-                        { label: "Reference Number", value: selectedTransaction.reference },
-                        { label: "QRPH Reference", value: selectedTransaction.qrphReference || "N/A" },
-                        { label: "Transaction Type", value: selectedTransaction.type },
-                        { label: "Description", value: selectedTransaction.description },
-                        { label: "Transaction Date", value: formatDateTime(selectedTransaction.transactionDate) },
-                        { label: "Processed Date", value: formatDateTime(selectedTransaction.processedDate) },
-                    ].map((item, idx) => (
-                        <div key={idx} className="flex justify-between items-start border-b border-slate-50 pb-2 last:border-0">
-                            <span className="text-xs font-medium text-slate-400">{item.label}</span>
-                            <span className="text-xs font-semibold text-slate-700 text-right max-w-[200px] break-all">
-                                {item.value}
+                <div className="p-6">
+                    {/* Primary Info: Amount & Status */}
+                    <div className="text-center mb-8">
+                        <p className="text-xs font-medium text-slate-400 uppercase mb-1">Total Amount</p>
+                        <div className={`text-3xl font-bold ${selectedTransaction.type === "Cash In" ? "text-emerald-600" : "text-slate-900"}`}>
+                            {selectedTransaction.type === "Cash In" ? "+" : "-"}₱{selectedTransaction.amount.toLocaleString()}
+                        </div>
+                        <div className="mt-3 flex justify-center">
+                            <span className={`px-4 py-1 rounded-full text-[11px] font-bold border ${getStatusClass(selectedTransaction.status)}`}>
+                                {selectedTransaction.status}
                             </span>
                         </div>
-                    ))}
-                </div>
+                    </div>
 
-                {/* OPTION 2: Technical Metadata Section (Recommended) */}
-                <div className="mt-6 pt-4 border-t border-slate-100">
-                    <div className="flex flex-col items-center gap-1">
-                        <span className="text-[10px] font-medium text-slate-300 uppercase tracking-widest">Transaction ID</span>
-                        <span className="text-[10px] font-mono text-slate-400 bg-slate-50 px-2 py-1 rounded select-all">
-                            {selectedTransaction.id}
-                        </span>
+                    {/* Details Grid */}
+                    <div className="grid grid-cols-1 gap-y-4">
+                        {[
+                            { label: "Reference Number", value: selectedTransaction.reference },
+                            { label: "QRPH Reference", value: selectedTransaction.qrphReference || "N/A" },
+                            { label: "Transaction Type", value: selectedTransaction.type },
+                            { label: "Description", value: selectedTransaction.description },
+                            { label: "Transaction Date", value: formatDateTime(selectedTransaction.transactionDate) },
+                            { label: "Processed Date", value: formatDateTime(selectedTransaction.processedDate) },
+                        ].map((item, idx) => (
+                            <div key={idx} className="flex justify-between items-start border-b border-slate-50 pb-2 last:border-0">
+                                <span className="text-xs font-medium text-slate-400">{item.label}</span>
+                                <span className="text-xs font-semibold text-slate-700 text-right max-w-[200px] break-all">
+                                    {item.value}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* OPTION 2: Technical Metadata Section (Recommended) */}
+                    <div className="mt-6 pt-4 border-t border-slate-100">
+                        <div className="flex flex-col items-center gap-1">
+                            <span className="text-[10px] font-medium text-slate-300 uppercase tracking-widest">Transaction ID</span>
+                            <span className="text-[10px] font-mono text-slate-400 bg-slate-50 px-2 py-1 rounded select-all">
+                                {selectedTransaction.id}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 )}
-
-
 
             {/* Pagination */}
             <div className="flex flex-col md:flex-row justify-between items-center mt-6 gap-4 border-b border-black/30 pb-4 pt-4">
