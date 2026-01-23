@@ -7,28 +7,8 @@ import { HiOutlineMenu } from "react-icons/hi";
 import { IoClose } from "react-icons/io5";
 import { useEffect, useRef, useState } from "react";
 
-interface Payment{
-    CLOSED: number;
-    COUNT: number;
-    FAILED: number;
-    PENDING: number;
-    SUCCESS: number;
-    TOTAL: number;
-    TRX_PER_MIN: number;
-}
-
-interface FundTransfer{
-    SUCCESS: number,
-    FAILED: number,
-    CLOSED: number,
-    PENDING:number,
-    COUNT:number,
-    TOTAL: number | null,
-    BALANCE: number
-}
-
 export default function Sidebar() {
-    const API_URL = import.meta.env.VITE_API_URL;
+    // const API_URL = import.meta.env.VITE_API_URL;
     const navigate = useNavigate();
     const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -36,17 +16,7 @@ export default function Sidebar() {
         { name: "Overview", path: "/landing", icon: LuBlocks },
         { name: "Transactions", path: "/transactions", icon: PiHandWithdrawBold },
         { name: "Withdrawal", path: "/withdrawal", icon: RiArrowLeftRightLine },
-    ];
-    
-    // Loading states
-    const [_loading, setLoading] = useState(true);
-
-    // Error states
-    const [_error, setError] = useState("");
-    
-    const [_paymentData, setPaymentData] = useState<Payment | null>(null);
-    const [_fundTransferData, setFundTransferData] = useState<FundTransfer | null>(null);
-        
+    ];  
 
     // const handleSignOut = async () => {
     //     try {
@@ -66,7 +36,7 @@ export default function Sidebar() {
     //     }
     // };
 
-    const [accessToken, setAccessToken] = useState(
+    const [_accessToken, setAccessToken] = useState(
         () => localStorage.getItem("accessToken")
     );
 
