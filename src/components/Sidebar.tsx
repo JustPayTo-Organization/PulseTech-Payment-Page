@@ -7,6 +7,26 @@ import { HiOutlineMenu } from "react-icons/hi";
 import { IoClose } from "react-icons/io5";
 import { useEffect, useRef, useState } from "react";
 
+interface Payment{
+    CLOSED: number;
+    COUNT: number;
+    FAILED: number;
+    PENDING: number;
+    SUCCESS: number;
+    TOTAL: number;
+    TRX_PER_MIN: number;
+}
+
+interface FundTransfer{
+    SUCCESS: number,
+    FAILED: number,
+    CLOSED: number,
+    PENDING:number,
+    COUNT:number,
+    TOTAL: number | null,
+    BALANCE: number
+}
+
 export default function Sidebar() {
     const API_URL = import.meta.env.VITE_API_URL;
     const navigate = useNavigate();
@@ -18,50 +38,70 @@ export default function Sidebar() {
         { name: "Withdrawal", path: "/withdrawal", icon: RiArrowLeftRightLine },
     ];
     
+    // Loading states
+    const [_loading, setLoading] = useState(true);
+
+    // Error states
+    const [_error, setError] = useState("");
+    
+    const [_paymentData, setPaymentData] = useState<Payment | null>(null);
+    const [_fundTransferData, setFundTransferData] = useState<FundTransfer | null>(null);
+        
+
+    // const handleSignOut = async () => {
+    //     try {
+    //         const res = await fetch(`${API_URL}/auth/logout`, {
+    //             method: "POST",
+    //             credentials: "include", // important: sends cookies to the server
+    //         });
+
+    //         if (!res.ok) throw new Error("Logout failed");
+
+    //         navigate("/login"); // redirect after successful logout
+    //         localStorage.removeItem('accessToken');
+
+    //     } catch (err) {
+    //         console.error(err);
+    //         alert("Logout failed. Please try again.");
+    //     }
+    // };
+
+    const [accessToken, setAccessToken] = useState(
+        () => localStorage.getItem("accessToken")
+    );
+
     const handleSignOut = async () => {
-        try {
-            const res = await fetch(`${API_URL}/auth/logout`, {
-                method: "POST",
-                credentials: "include", // important: sends cookies to the server
-            });
-
-            if (!res.ok) throw new Error("Logout failed");
-
-            navigate("/login"); // redirect after successful logout
-            localStorage.removeItem('accessToken');
-
-        } catch (err) {
-            console.error(err);
-            alert("Logout failed. Please try again.");
-        }
-    };
+        localStorage.removeItem('accessToken');
+        setAccessToken(null);
+        navigate("/login", { replace: true });
+    };  
 
 
-    const clientName = "Client Name";
-    const nameParts = clientName.trim().split(" ");
-    const initials =
-        nameParts.length >= 2
-            ? `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`
-            : nameParts[0][0];
-    const clientInitials = initials.toUpperCase();
+        const clientName = "Client Name";
+        const nameParts = clientName.trim().split(" ");
+        const initials =
+            nameParts.length >= 2
+                ? `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`
+                : nameParts[0][0];
+        const clientInitials = initials.toUpperCase();
 
-    const [showChangePass, setShowChangePass] = useState(false);
-    const clientRef = useRef<HTMLDivElement>(null);
+        const [showChangePass, setShowChangePass] = useState(false);
+        const clientRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-        if (
-            clientRef.current &&
-            !clientRef.current.contains(event.target as Node)
-        ) {
-            setShowChangePass(false);
-        }
-        };
+        useEffect(() => {
+            const handleClickOutside = (event: MouseEvent) => {
+            if (
+                clientRef.current &&
+                !clientRef.current.contains(event.target as Node)
+            ) {
+                setShowChangePass(false);
+            }
+            };
 
-        document.addEventListener("click", handleClickOutside);
-        return () => {
-            document.removeEventListener("click", handleClickOutside);
-        };
+            document.addEventListener("click", handleClickOutside);
+            return () => {
+                document.removeEventListener("click", handleClickOutside);
+            };
     }, []);
 
     const handleToggleChangePass = () => {

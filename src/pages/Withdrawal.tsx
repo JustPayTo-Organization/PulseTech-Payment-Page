@@ -20,7 +20,8 @@ interface AccountData {
 }
 
 const Withdrawal: React.FC = () => {
-    const API_URL = import.meta.env.VITE_API_URL;
+    const API_URL = import.meta.env.VITE_API_URL_DEV;
+    const API_URL2 = import.meta.env.VITE_API_URL;
     const [_accounts, setAccounts] = useState<AccountData | null>(null);
     const [_loadingAccounts, setLoadingAccounts] = useState<boolean>(true);
     const [_errorAccounts, setErrorAccounts] = useState<string | null>(null);
@@ -135,7 +136,7 @@ const Withdrawal: React.FC = () => {
                 setLoadingAccounts(true);
                 setErrorAccounts(null);
 
-                const res = await fetch(`${API_URL}/accounts`, {
+                const res = await fetch(`${API_URL}/dashboard/withdrawal/accounts`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("accessToken") || ""}`,
                     },
@@ -202,7 +203,7 @@ const Withdrawal: React.FC = () => {
 
             const token = localStorage.getItem("accessToken") || "";
 
-            const res = await fetch(`${API_URL}/withdrawal`, {
+            const res = await fetch(`${API_URL2}/dashboard/withdrawal`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

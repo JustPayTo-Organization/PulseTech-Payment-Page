@@ -71,7 +71,7 @@ const Landing: React.FC = () => {
             try {
                 const [paymentRes, fundRes] = await Promise.all([
                     fetch(
-                        `${API_URL}/payment?start=${today}&end=${today}`,
+                        `${API_URL}/dashboard/success-rate/payment?start=${today}&end=${today}`,
                         {
                             headers: {
                                 "Accept": "application/json",
@@ -80,7 +80,7 @@ const Landing: React.FC = () => {
                         }
                     ),
                     fetch(
-                        `${API_URL}/fund-transfer?start=${today}&end=${today}`,
+                        `${API_URL}/dashboard/success-rate/fund-transfer?start=${today}&end=${today}`,
                         {
                             headers: {
                                 "Accept": "application/json",

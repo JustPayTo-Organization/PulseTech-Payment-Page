@@ -181,7 +181,7 @@ const Transactions: React.FC = () => {
             });
 
             const token = localStorage.getItem("access_token"); // or from cookie
-            const res = await fetch(`${API_URL}/transactions?${params.toString()}`, {
+            const res = await fetch(`${API_URL}/dashboard/transactions?${params.toString()}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
