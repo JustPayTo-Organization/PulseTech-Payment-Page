@@ -4,7 +4,7 @@ import { IoMdPerson, IoMdLock } from "react-icons/io";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 
 const Login: React.FC = () => {
-    // const API_URL = import.meta.env.VITE_API_URL;
+    const API_URL = import.meta.env.VITE_API_URL;
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     
@@ -17,7 +17,7 @@ const Login: React.FC = () => {
         setError("");
 
         try {
-            const res = await fetch(`https://sandbox.paylinkto.site/dashboard/login`, {
+            const res = await fetch(`${API_URL}/dashboard/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username, password }),

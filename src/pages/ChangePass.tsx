@@ -25,13 +25,12 @@ const ChangePass = () => {
         }
 
         try {
-            const res = await fetch(`${API_URL}/change-pass`, {
+            const res = await fetch(`${API_URL}/dashboard/change-password`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${accessToken}`,
                 },
-                credentials: "include", 
                 body: JSON.stringify({
                     new_password: formData.newPassword,
                     password: formData.currentPassword,
