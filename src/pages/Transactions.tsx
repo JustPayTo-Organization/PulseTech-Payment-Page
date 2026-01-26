@@ -180,7 +180,7 @@ const Transactions: React.FC = () => {
                 limit: rowsPerPage.toString(),
             });
 
-            const token = localStorage.getItem("access_token"); // or from cookie
+            const token = localStorage.getItem("accessToken"); // or from cookie
             const res = await fetch(`${API_URL}/dashboard/transactions?${params.toString()}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
