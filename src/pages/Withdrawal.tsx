@@ -3,7 +3,6 @@ import React, { useEffect, useRef, useState, type ChangeEvent, type FormEvent } 
 // import { IoIosInformationCircleOutline } from "react-icons/io";
 // import { MdOutlineShield } from "react-icons/md";
 import { TbSend } from "react-icons/tb";
-import { LuBuilding2 } from "react-icons/lu";
 import { FaWallet } from 'react-icons/fa6';
 
 interface WithdrawalFormData {
@@ -15,17 +14,33 @@ interface WithdrawalFormData {
     method: "instapay" | "pesonet";
 }
 
-interface AccountData {
-    balance: number; // to be adjusted based on format of api response
+interface fundTransferData {
+    BALANCE : number;
+    CLOSED : number;
+    COUNT : number;
+    FAILED : number;
+    PENDING : number;
+    SUCCESS : number;
+    TOTAL : number;
+    TRX_PER_MIN : number;
 }
 
+// interface AccountData {
+//     balance: number;
+// }
+
 const Withdrawal: React.FC = () => {
-    const API_URL = import.meta.env.VITE_API_URL_DEV;
+    const API_URL = import.meta.env.VITE_API_URL;
     const API_URL2 = import.meta.env.VITE_API_URL;
-    const [_accounts, setAccounts] = useState<AccountData | null>(null);
+    const [_accounts, setAccounts] = useState<fundTransferData | null>(null);
     const [_loadingAccounts, setLoadingAccounts] = useState<boolean>(true);
     const [_errorAccounts, setErrorAccounts] = useState<string | null>(null);
     const [amountError, setAmountError] = useState<string | null>(null);
+    // Loading states
+    const [_loading, setLoading] = useState(true);
+    
+    // Error states
+    const [_error, setError] = useState("");
 
     const [formData, setFormData] = useState<WithdrawalFormData>({
         amount: "",
@@ -131,25 +146,51 @@ const Withdrawal: React.FC = () => {
     }
 
     useEffect(() => {
+        
         const fetchAccounts = async () => {
             try {
                 setLoadingAccounts(true);
                 setErrorAccounts(null);
+                
+                const accessToken = localStorage.getItem("accessToken");
+                const today = new Date().toISOString().split("T")[0];
 
-                const res = await fetch(`${API_URL}/dashboard/withdrawal/accounts`, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("accessToken") || ""}`,
-                    },
-                });
-
-                if (!res.ok) {
-                    const errText = await res.text();
-                    throw new Error(errText || "Failed to fetch accounts");
+                if (!accessToken) {
+                    setError("Missing access token. Please login again.");
+                    setLoading(false);
+                    return;
                 }
 
-                const data: AccountData = await res.json();
-                // Example: if your API returns { balance: 123456.78 }
-                setAccounts(data);
+                const fundRes = await fetch(
+                        `${API_URL}/dashboard/success-rate/fund-transfer?start=${today}&end=${today}`,
+                        {
+                            headers: {
+                                "Accept": "application/json",
+                                "Authorization": `Bearer ${accessToken}`,
+                            },
+                        }
+                    );
+                
+                if (!fundRes.ok) {
+                    throw new Error("Failed to fetch fund transfer data");
+                }
+
+                const fundTransferData: fundTransferData = await fundRes.json();
+                setAccounts(fundTransferData);
+
+                // const res = await fetch(`${API_URL}/dashboard/withdrawal/accounts`, {
+                //     headers: {
+                //         Authorization: `Bearer ${localStorage.getItem("accessToken") || ""}`,
+                //     },
+                // });
+
+                // if (!res.ok) {
+                //     const errText = await res.text();
+                //     throw new Error(errText || "Failed to fetch accounts");
+                // }
+
+                // const data: AccountData = await res.json();
+                // setAccounts(data);
 
             } catch (err: unknown) {
                 console.error("Error fetching accounts:", err);
@@ -227,6 +268,10 @@ const Withdrawal: React.FC = () => {
         }
     };
 
+    const Spinner = () => (
+        <span className="inline-block w-8 h-8 border-4 border-white/30 border-t-blue-300 rounded-full animate-spin" />
+    );
+
     return (
         <div className="p-4 md:p-8">
             <h1 className="text-3xl font-bold mb-6 mt-12 lg:mt-0">Withdraw Details</h1>
@@ -268,7 +313,7 @@ const Withdrawal: React.FC = () => {
                             </label>
 
                             {/* PESONet */}
-                            <label
+                            {/* <label
                             className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all w-full ${
                                 formData.method === "pesonet" ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"
                             }`}
@@ -292,7 +337,7 @@ const Withdrawal: React.FC = () => {
                                 <p className="font-medium text-gray-900">PESONet</p>
                                 <p className="text-xs text-gray-500">Same-day transfer, no limit</p>
                             </div>
-                            </label>
+                            </label> */}
                         </div>
                     </div>
 
@@ -355,11 +400,16 @@ const Withdrawal: React.FC = () => {
                             </div>
                         </div>
                         <p className={`text-4xl font-bold mt-2 ${
-                            _accounts
+                            _accounts?.BALANCE
                                 ? "text-white"
                                 : "text-red-500 text-[18px]"
                         }`}>
-                            {_accounts ? formatNumberWithCommas(_accounts.balance.toFixed(2)) : "Unable to fetch balance"}
+                            { _loadingAccounts ? (
+                                <Spinner/>
+                            ) : _accounts 
+                            ? (formatNumberWithCommas(_accounts.BALANCE.toFixed(2))) 
+                            : ("Unable to fetch balance")
+                        }
                         </p>
                     </div>
 

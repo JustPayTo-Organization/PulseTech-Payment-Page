@@ -4,14 +4,15 @@ import { CiCalendar } from "react-icons/ci";
 import { HiChevronDown } from "react-icons/hi";
 import { MdKeyboardDoubleArrowLeft, MdKeyboardDoubleArrowRight, MdKeyboardArrowRight, MdKeyboardArrowLeft} from "react-icons/md";
 import { useNavigate } from "react-router-dom";
+import { addDownloadJob, getAllJobs, type DownloadJob } from "../components/database/db";
 
-interface Transaction {
+export interface Transaction {
     amount: number;
     created_at: string;
     error?: string;
     fees: number;
     instapay_reference: string;
-    merhant_id: string;
+    merchant_id: string;
     paid_at: string;
     reference_id: string;
     status: "SUCCESS" | "PENDING" | "FAILED" | "CLOSED";
@@ -19,16 +20,10 @@ interface Transaction {
     type: "PAYMENT" | "FUND_TRANSFER";
 }
 
-interface DownloadJob {
-    id: string;
-    name: string;
-    status: "queued" | "ready" | "error";
-    transactions: Transaction[];
-    createdAt: string;
-}
-
-const formatDateTime = (dateStr: string) => {
+const formatDateTime = (dateStr: string | null) => {
+    if (!dateStr) return "N/A"; // fallback for empty or null values
     const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "N/A"; // invalid date
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
@@ -59,7 +54,7 @@ const formatDateTime = (dateStr: string) => {
 // });
 
 const Transactions: React.FC = () => {
-    
+   
     const navigate = useNavigate();
     const API_URL = import.meta.env.VITE_API_URL;
     const [_transactions, setTransactions] = useState<Transaction[]>([]);
@@ -80,12 +75,12 @@ const Transactions: React.FC = () => {
     const [appliedDate, setAppliedDate] = useState("");
 
     const [currentPage, setCurrentPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(25);
     const [downloadQueue, _setDownloadQueue] = useState<DownloadJob[]>([]);
     const [downloadMenuOpen, setDownloadMenuOpen] = useState(false);
     const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
-    
+
     const openModal = (tx: Transaction) => {
         setSelectedTransaction(tx);
         setModalOpen(true);
@@ -96,37 +91,28 @@ const Transactions: React.FC = () => {
         setSelectedTransaction(null);
     };
 
-    const handleQueueDownload = () => {
-        if (isDownloading) return;
-
-        if (currentTransactions.length === 0) return;
+    const handleQueueDownload = async () => {
+        if (isDownloading || currentTransactions.length === 0) return;
 
         setIsDownloading(true);
-        
-        try{
-            const job: DownloadJob = {
-                id: `job-${Date.now()}`,
-                name: `transactions_page_${currentPage}_${new Date().toISOString().slice(0,10)}.xlsx`,
-                status: "ready",
-                transactions: [...currentTransactions],
-                createdAt: new Date().toISOString(),
-            };
-
-            // Merge with existing localStorage queue
-            const savedQueue = localStorage.getItem('downloadQueue');
-            const existingJobs: DownloadJob[] = savedQueue ? JSON.parse(savedQueue) : [];
-            const updatedJobs = [...existingJobs, job];
-            localStorage.setItem('downloadQueue', JSON.stringify(updatedJobs));
-
-            // Optional: notification
-            setNotification(`Download queued: ${job.name}`);
-            setTimeout(() => setNotification(null), 4000);
-        }catch(err){
-            console.error("Download failed", err);
-        }finally {
-            setTimeout(() => setIsDownloading(false), 4000);
-        }
+        const jobId = `job-${Date.now()}`;
+        const job: DownloadJob = {
+            id: jobId,
+            name: `transactions_page_${currentPage}_${new Date().toISOString().slice(0,10)}.xlsx`,
+            status: "queued",
+            progress: 0,
+            transactions: [..._transactions],
+            createdAt: new Date().toISOString(),
         };
+
+        // Save job to IndexedDB
+        await addDownloadJob(job);
+        _setDownloadQueue( await getAllJobs());
+
+        setNotification(`Download queued: ${job.name}`);
+        setTimeout(() => setNotification(null), 4000);
+    };
+
 
     const handleApplyFilters = () => {
         setAppliedStatus(statusInput);
@@ -137,25 +123,25 @@ const Transactions: React.FC = () => {
 
     // NOTE:
     // Replace dummyTransactions with _transactions if using api response
-    const filteredTransactions = _transactions.filter((tx) => {
-        const allowedType = tx.type === "PAYMENT" || tx.type === "FUND_TRANSFER";
-        const statusUpper = tx.status.toUpperCase(); 
-        const matchesStatus = appliedStatus ? statusUpper === appliedStatus : true;
-        const matchesType = appliedType ? tx.type === appliedType : true;
-        const matchesDate = appliedDate ? tx.created_at.includes(appliedDate) : true;
-        return allowedType && matchesStatus && matchesType && matchesDate;
-    });
+    // const filteredTransactions = _transactions.filter((tx) => {
+    //     const allowedType = tx.type === "PAYMENT" || tx.type === "FUND_TRANSFER";
+    //     const statusUpper = tx.status.toUpperCase(); 
+    //     const matchesStatus = appliedStatus ? statusUpper === appliedStatus : true;
+    //     const matchesType = appliedType ? tx.type === appliedType : true;
+    //     const matchesDate = appliedDate ? tx.created_at.includes(appliedDate) : true;
+    //     return allowedType && matchesStatus && matchesType && matchesDate;
+    // });
 
-    const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / rowsPerPage));
-    const currentTransactions = filteredTransactions.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
+    // const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / rowsPerPage));
+    // const currentTransactions = filteredTransactions.slice(
+    // (currentPage - 1) * rowsPerPage,
+    // currentPage * rowsPerPage
+    // );
+    const totalPages = Math.max(1, Math.ceil(totalItems / rowsPerPage));
+    const currentTransactions = _transactions.slice(
+        (currentPage - 1) * rowsPerPage,
+        currentPage * rowsPerPage
     );
-
-    // <-- Add this
-    useEffect(() => {
-    setTotalItems(filteredTransactions.length);
-    }, [filteredTransactions]);
 
     const getStatusClass = (status: string) => {
         switch (status) {
@@ -177,13 +163,25 @@ const Transactions: React.FC = () => {
         setError(null);
 
         try {
-            const params = new URLSearchParams({
-                status: appliedStatus || "",      // empty string if no filter
-                start: appliedDate || new Date().toISOString().slice(0,10), // fallback today
-                end: appliedDate || new Date().toISOString().slice(0,10),
-                page: (currentPage - 1).toString(),
-                limit: rowsPerPage.toString(),
-            });
+            const params = new URLSearchParams();
+
+            params.append("start", appliedDate || new Date().toISOString().slice(0, 10));
+            params.append("end", appliedDate || new Date().toISOString().slice(0, 10));
+            // params.append("page", (currentPage - 1).toString());
+            // params.append("limit", rowsPerPage.toString());
+            
+            // Conditionally include optional params
+            if (appliedStatus) params.append("status", appliedStatus);
+            if (typeInput) params.append("transaction_type", typeInput.toLowerCase());
+
+            // const params = new URLSearchParams({
+            //     status: appliedStatus || "",      // empty string if no filter
+            //     start: appliedDate || new Date().toISOString().slice(0,10), // fallback today
+            //     end: appliedDate || new Date().toISOString().slice(0,10),
+            //     page: (currentPage - 1).toString(),
+            //     limit: rowsPerPage.toString(),
+            //     transaction_type: typeInput.toLowerCase() || ""
+            // });
 
             const token = localStorage.getItem("accessToken"); // or from cookie
             const res = await fetch(`${API_URL}/dashboard/transactions?${params.toString()}`, {
@@ -224,7 +222,7 @@ const Transactions: React.FC = () => {
     }
     useEffect(() => {
         fetchTransactions();
-    }, [appliedStatus, appliedType, appliedDate, currentPage, rowsPerPage]);
+    }, [appliedStatus, appliedType, appliedDate, rowsPerPage]); //removed currentPage
 
     const Spinner = () => (
         <span className="inline-block w-8 h-8 border-4 border-white/30 border-t-blue-500 rounded-full animate-spin mx-auto" />
@@ -359,7 +357,7 @@ const Transactions: React.FC = () => {
                         >
                             <option value="">All Types</option>
                             <option value="PAYMENT">Cash in</option>
-                            <option value="FUND_TRANSFER">Cash out</option>
+                            <option value="FUND-TRANSFER">Cash out</option>
                         </select>
                         <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-gray-400">
                             <HiChevronDown size={14} />
@@ -408,7 +406,8 @@ const Transactions: React.FC = () => {
                                     Queue Download
                                 </button>
                                 <button
-                                    onClick={() => navigate("/download-queue", { state: { downloadQueue } })}
+                                    // onClick={() => navigate("/download-queue", { state: { downloadQueue } })}
+                                    onClick={() => navigate("/download-queue")}
                                     className="w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 text-slate-700"
                                 >
                                     View Queue
@@ -455,7 +454,7 @@ const Transactions: React.FC = () => {
                     <td className={`px-6 py-4 font-semibold ${tx.type === "PAYMENT" ? "text-green-600" : "text-red-600"}`}>
                     {tx.type === "PAYMENT" ? "+" : "-"}₱{tx.amount.toLocaleString("en-PH")}
                     </td>
-                    <td className="px-6 py-4">{tx.type === "PAYMENT" ? "Cash in" : "Cash out"}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{tx.type === "PAYMENT" ? "Cash in" : "Cash out"}</td>
                     <td className="px-6 py-4">
                     <span className={`px-3 py-1 text-[10px] leading-5 font-bold rounded-full border ${getStatusClass(tx.status)}`}>
                         {tx.status.charAt(0) + tx.status.slice(1).toLowerCase()}
@@ -598,7 +597,7 @@ const Transactions: React.FC = () => {
                         onChange={e => { setRowsPerPage(Number(e.target.value)); setCurrentPage(1); }}
                         className="border border-black/30 rounded px-2 py-1 text-xs"
                     >
-                        {[5,10,20,50].map(n => <option key={n} value={n}>{n}</option>)}
+                        {[25,50,100].map(n => <option key={n} value={n}>{n}</option>)}
                     </select>
                 </div>
 

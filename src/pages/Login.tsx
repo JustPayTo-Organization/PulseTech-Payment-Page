@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoMdPerson, IoMdLock } from "react-icons/io";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
+import { getDisplayNameFromUsername } from "../constants/clientDisplayMap";
 
 const Login: React.FC = () => {
     const API_URL = import.meta.env.VITE_API_URL;
@@ -24,6 +25,7 @@ const Login: React.FC = () => {
             });
 
             const data = await res.json(); // parse backend response
+            const displayName = getDisplayNameFromUsername(username);
 
             if (!res.ok) {
                 // Use backend message if available
@@ -32,7 +34,13 @@ const Login: React.FC = () => {
             }
 
             localStorage.setItem("accessToken", data.access_token);
-            
+            localStorage.setItem(
+                "client",
+                JSON.stringify({
+                    displayName,
+                })
+            );
+
             navigate("/landing"); // login success
         } catch (err) {
             console.error(err);

@@ -26,6 +26,7 @@ interface FundTransfer{
     COUNT:number,
     TOTAL: number | null,
     BALANCE: number
+    TRX_PER_MIN: number;
 }
 
 const Landing: React.FC = () => {
@@ -50,7 +51,7 @@ const Landing: React.FC = () => {
 
     const hiddenBalance = formattedBalance.replace(/[^₱]/g, "*");
     const totalTransactions = (paymentData?.COUNT ?? 0) + (fundTransferData?.COUNT ?? 0);
-    const totalTPM = (paymentData?.TRX_PER_MIN ?? 0)
+    const totalTPM = ((paymentData?.TRX_PER_MIN ?? 0) + (fundTransferData?.TRX_PER_MIN ?? 0 ));
     
     useEffect(() => {
 
@@ -285,7 +286,7 @@ const Landing: React.FC = () => {
                             <p className="text-2xl font-bold mt-1 text-slate-800">
                                 {loading ? (
                                     <Spinner />
-                                ) : (paymentData?.COUNT ?? 0).toLocaleString("en-PH", {minimumFractionDigits: 2 , maximumFractionDigits: 2 })
+                                ) : (paymentData?.TRX_PER_MIN ?? 0)
                                 }
                             </p>
                         </div>
@@ -296,7 +297,7 @@ const Landing: React.FC = () => {
                             <p className="text-2xl font-bold mt-1 text-slate-800">
                                 {loading ? (
                                     <Spinner />
-                                ) : (fundTransferData?.COUNT ?? 0).toLocaleString("en-PH", {minimumFractionDigits: 2 , maximumFractionDigits: 2 })
+                                ) : (fundTransferData?.TRX_PER_MIN ?? 0).toLocaleString("en-PH", {minimumFractionDigits: 2 , maximumFractionDigits: 2 })
                                 }
                             </p>
                         </div>
