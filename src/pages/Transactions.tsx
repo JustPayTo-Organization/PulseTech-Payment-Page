@@ -76,7 +76,7 @@ const Transactions: React.FC = () => {
 
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(25);
-    const [downloadQueue, _setDownloadQueue] = useState<DownloadJob[]>([]);
+    const [_downloadQueue, _setDownloadQueue] = useState<DownloadJob[]>([]);
     const [downloadMenuOpen, setDownloadMenuOpen] = useState(false);
     const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
     const [modalOpen, setModalOpen] = useState(false);

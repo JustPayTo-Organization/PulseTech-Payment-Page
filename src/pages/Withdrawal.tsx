@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState, type ChangeEvent, type FormEvent } 
 // import { MdOutlineShield } from "react-icons/md";
 import { TbSend } from "react-icons/tb";
 import { FaWallet } from 'react-icons/fa6';
+import { CreditCard, Landmark } from 'lucide-react';
 
 interface WithdrawalFormData {
     amount: string;
@@ -25,22 +26,74 @@ interface fundTransferData {
     TRX_PER_MIN : number;
 }
 
-// interface AccountData {
-//     balance: number;
-// }
+interface withdrawalAccount {
+    account_name: string;
+    account_number: string;
+    bank_code: string;
+    id: number;
+    merchant_id: string;
+}
+
 
 const Withdrawal: React.FC = () => {
     const API_URL = import.meta.env.VITE_API_URL;
     const API_URL2 = import.meta.env.VITE_API_URL;
     const [_accounts, setAccounts] = useState<fundTransferData | null>(null);
+    const [_withdrawalAccounts, setWithdrawalAccounts] = useState <withdrawalAccount[]>([]);
     const [_loadingAccounts, setLoadingAccounts] = useState<boolean>(true);
     const [_errorAccounts, setErrorAccounts] = useState<string | null>(null);
     const [amountError, setAmountError] = useState<string | null>(null);
     // Loading states
     const [_loading, setLoading] = useState(true);
+    const [withdrawalAccountsLoading, setWithdrawalAccountsLoading] = useState(true);
     
     // Error states
     const [_error, setError] = useState("");
+    
+    // const dummy_accounts: withdrawalAccount[] = [
+    //     {
+    //     id: 1,
+    //     account_name: "John Doe",
+    //     account_number: "********4421",
+    //     bank_code: "BPI_EXPRESS",
+    //     merchant_id: "m-001"
+    //     },
+    //     {
+    //     id: 2,
+    //     account_name: "John Doe",
+    //     account_number: "********9902",
+    //     bank_code: "GCASH_DIRECT",
+    //     merchant_id: "m-002"
+    //     },
+    //     {
+    //     id: 3,
+    //     account_name: "John Doe",
+    //     account_number: "********9903",
+    //     bank_code: "GCASH_DIRECT",
+    //     merchant_id: "m-003"
+    //     },
+    //     {
+    //     id: 4,
+    //     account_name: "John Doe",
+    //     account_number: "********9904",
+    //     bank_code: "GCASH_DIRECT",
+    //     merchant_id: "m-004"
+    //     },
+    //     {
+    //     id: 5,
+    //     account_name: "John Doe",
+    //     account_number: "********9905",
+    //     bank_code: "GCASH_DIRECT",
+    //     merchant_id: "m-005"
+    //     }
+    // ];
+
+    const maskNumber = (num: string) => {
+        const lastFour = num.slice(-4);
+        return `•••• ${lastFour}`;
+    };
+    
+    const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
 
     const [formData, setFormData] = useState<WithdrawalFormData>({
         amount: "",
@@ -151,7 +204,8 @@ const Withdrawal: React.FC = () => {
             try {
                 setLoadingAccounts(true);
                 setErrorAccounts(null);
-                
+                setWithdrawalAccountsLoading(true);
+
                 const accessToken = localStorage.getItem("accessToken");
                 const today = new Date().toISOString().split("T")[0];
 
@@ -178,20 +232,20 @@ const Withdrawal: React.FC = () => {
                 const fundTransferData: fundTransferData = await fundRes.json();
                 setAccounts(fundTransferData);
 
-                // const res = await fetch(`${API_URL}/dashboard/withdrawal/accounts`, {
-                //     headers: {
-                //         Authorization: `Bearer ${localStorage.getItem("accessToken") || ""}`,
-                //     },
-                // });
+                const res = await fetch(`${API_URL}/dashboard/account/wallet/depository-accounts`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("accessToken") || ""}`,
+                    },
+                });
 
-                // if (!res.ok) {
-                //     const errText = await res.text();
-                //     throw new Error(errText || "Failed to fetch accounts");
-                // }
+                if (!res.ok) {
+                    const errText = await res.text();
+                    throw new Error(errText || "Failed to fetch accounts");
+                }
 
-                // const data: AccountData = await res.json();
-                // setAccounts(data);
-
+                const data: withdrawalAccount[] = await res.json();
+                setWithdrawalAccounts(data);
+                // console.log("Response withdrawal accounts", data)
             } catch (err: unknown) {
                 console.error("Error fetching accounts:", err);
 
@@ -202,6 +256,7 @@ const Withdrawal: React.FC = () => {
                 }
             } finally {
                 setLoadingAccounts(false);
+                setWithdrawalAccountsLoading(false);
             }
         };
 
@@ -340,13 +395,81 @@ const Withdrawal: React.FC = () => {
                             </label> */}
                         </div>
                     </div>
+                    
+                    {/* Depository Account Selection */}
+                    <div className="w-full max-w-5xl mx-auto p-4">
+                        <h2 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">
+                            Withdrawal Account
+                        </h2>
 
+                        {/* Using a 6-column grid on desktop:
+                            - Cards span 3 columns (3+3 = 6), forcing exactly 2 per row.
+                            - On mobile/small screens, they span the full width.
+                        */}
+                        
+                            {withdrawalAccountsLoading ?
+                            (
+                                // Loading state
+                                <div className="flex justify-center items-center p-8">
+                                <Spinner /> {/* Replace with your spinner component */}
+                                </div>
+                            ) : _withdrawalAccounts.length === 0 ? (
+                                // No accounts
+                                <p className="text-gray-500 text-center">No withdrawal accounts found.</p>
+                            ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                                {_withdrawalAccounts.map((account) => {
+                                    const isSelected = selectedAccountId === account.id;
+                                    const isBank = account.bank_code.toLowerCase().includes("bank");
 
+                                    return (
+                                        <label
+                                        key={account.id}
+                                        className={`
+                                            relative md:col-span-3 flex items-center gap-4 p-4 cursor-pointer rounded-xl border-2 transition-all duration-200
+                                            ${isSelected
+                                            ? "border-blue-600 bg-blue-50 ring-1 ring-blue-600 shadow-sm"
+                                            : "border-gray-200 bg-white hover:border-gray-300"
+                                            }
+                                        `}
+                                        >
+                                        <input
+                                            type="radio"
+                                            name="withdrawalAccount"
+                                            className="sr-only"
+                                            checked={isSelected}
+                                            onChange={() => setSelectedAccountId(account.id)}
+                                        />
+
+                                        <div className={`
+                                            shrink-0 w-12 h-12 flex items-center justify-center rounded-xl transition-colors
+                                            ${isSelected ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-500"}
+                                        `}>
+                                            {isBank ? <Landmark size={22} /> : <CreditCard size={22} />}
+                                        </div>
+
+                                        <div className="flex flex-col min-w-0">
+                                            <span className={`font-bold truncate ${isSelected ? "text-blue-900" : "text-gray-900"}`}>
+                                            {account.account_name}
+                                            </span>
+                                            <span className="text-sm font-medium text-gray-500">
+                                            {maskNumber(account.account_number)}
+                                            </span>
+                                            <span className="text-xs text-gray-400 font-semibold uppercase tracking-tighter mt-0.5">
+                                            {account.bank_code.replace("_", " ")}
+                                            </span>
+                                        </div>
+                                    </label>
+                                );
+                                })}
+                        </div>
+                        )}
+                    </div>
                     {/* Form */}
                     
                         <form onSubmit={handleSubmit} className="flex flex-col flex-1 space-y-8">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+                                <label className="block text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Amount</label>
                                 <input 
                                     ref={amountInputRef}
                                     type="text" 

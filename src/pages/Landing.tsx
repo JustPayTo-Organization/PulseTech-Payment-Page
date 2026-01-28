@@ -3,7 +3,7 @@ import GlowBackground from "../components/ui/GlowBackground";
 import { GoArrowUpRight, GoArrowDownLeft } from "react-icons/go";
 import { RiTimeLine } from "react-icons/ri";
 import { GrTime } from "react-icons/gr";
-import { FaArrowTrendDown, FaArrowTrendUp } from "react-icons/fa6";
+// import { FaArrowTrendDown, FaArrowTrendUp } from "react-icons/fa6";
 import { FaWallet } from "react-icons/fa";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 import { MdRepeatOne } from "react-icons/md";
@@ -199,10 +199,10 @@ const Landing: React.FC = () => {
                     <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5 flex-1">
                         <div className="flex justify-between items-start mb-4">
                             <GoArrowDownLeft className="rounded-lg p-2 text-4xl bg-purple-100 text-purple-600"/>
-                            <div className="flex text-green-500 items-center gap-1 text-sm font-medium">
+                            {/* <div className="flex text-green-500 items-center gap-1 text-sm font-medium">
                                 <FaArrowTrendUp/>
                                 <span>Active</span>
-                            </div>
+                            </div> */}
                         </div>
                         <h4 className="text-gray-500 font-medium text-xs uppercase tracking-wider">Trans. / min</h4>
                         <p className="text-2xl font-bold mt-1 text-slate-800">
@@ -242,10 +242,10 @@ const Landing: React.FC = () => {
                         <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
                             <div className="flex justify-between items-center mb-4">
                                 <GoArrowDownLeft className="rounded-lg p-2 text-4xl bg-emerald-100 text-emerald-600"/>
-                                <div className="flex text-green-500 items-center gap-1 text-sm">
+                                {/* <div className="flex text-green-500 items-center gap-1 text-sm">
                                     <FaArrowTrendUp/>
                                     <p>+12.5%</p>
-                                </div>
+                                </div> */}
                             </div>
                             <h4 className="text-gray-500 font-medium text-sm">Cash In</h4>
                             <p className="text-2xl font-bold mt-1 text-slate-800">₱
@@ -260,10 +260,10 @@ const Landing: React.FC = () => {
                         <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
                             <div className="flex justify-between items-center mb-4">
                                 <GoArrowUpRight className="rounded-lg p-2 text-4xl bg-red-100 text-red-600"/>
-                                <div className="flex text-red-500 items-center gap-1 text-sm">
+                                {/* <div className="flex text-red-500 items-center gap-1 text-sm">
                                     <FaArrowTrendDown/>
                                     <p>-3.4%</p>
-                                </div>
+                                </div> */}
                             </div>
                             <h4 className="text-gray-500 font-medium text-sm">Cash Out</h4>
                             <p className="text-2xl font-bold mt-1 text-slate-800">₱
@@ -286,7 +286,7 @@ const Landing: React.FC = () => {
                             <p className="text-2xl font-bold mt-1 text-slate-800">
                                 {loading ? (
                                     <Spinner />
-                                ) : (paymentData?.TRX_PER_MIN ?? 0)
+                                ) : (paymentData?.TRX_PER_MIN.toLocaleString("en-PH", {minimumFractionDigits: 2, maximumFractionDigits: 2}) ?? 0)
                                 }
                             </p>
                         </div>
