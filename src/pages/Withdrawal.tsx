@@ -88,10 +88,10 @@ const Withdrawal: React.FC = () => {
     //     }
     // ];
 
-    const maskNumber = (num: string) => {
-        const lastFour = num.slice(-4);
-        return `•••• ${lastFour}`;
-    };
+    // const maskNumber = (num: string) => {
+    //     const lastFour = num.slice(-4);
+    //     return `•••• ${lastFour}`;
+    // };
     
     const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
 
@@ -453,7 +453,7 @@ const Withdrawal: React.FC = () => {
                                             {account.account_name}
                                             </span>
                                             <span className="text-sm font-medium text-gray-500">
-                                            {maskNumber(account.account_number)}
+                                            {account.account_number}
                                             </span>
                                             <span className="text-xs text-gray-400 font-semibold uppercase tracking-tighter mt-0.5">
                                             {account.bank_code.replace("_", " ")}
