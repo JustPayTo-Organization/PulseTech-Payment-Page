@@ -290,9 +290,9 @@ const Withdrawal: React.FC = () => {
 
             // Build request payload to match WithdrawalRequest
             const payload = {
-                account_id: selectedAccountId, 
-                amount: amountNumber,
-                service_type: formData.method, // 'instapay' or 'pesonet'
+                wallet_id: selectedAccountId, 
+                amount: Number(amountNumber).toFixed(2),
+                method: formData.method, // 'instapay' or 'pesonet'
             };
 
             console.log("Sending withdrawal request:", payload);
