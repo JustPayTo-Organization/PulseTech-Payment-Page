@@ -389,7 +389,7 @@ const PaymentPage: React.FC = () => {
                                     method === item.id 
                                     ? 'bg-[#312B5B] border-[#312B5B] text-white' 
                                     : 'border-slate-100 text-slate-500 hover:border-slate-300 cursor-pointer' 
-                                }`}
+                                    }`}
                             >
                                 
                                 <span className="flex text-xs text-center justify-center whitespace-nowrap leading-tight">
@@ -405,50 +405,10 @@ const PaymentPage: React.FC = () => {
                     </div>
                     
                     {/* Extra Selections */}
-                    {method === 'bank' && (
-                        <div className="p-2 rounded space-y-2">
-                            <p className="text-xs font-bold text-[#312B5B]">
-                            What bank will you use?
-                            </p>
-                            <div
-                            className="space-y-2 overflow-y-auto"
-                            style={{
-                                minHeight: `${3 * 56}px`, // assuming each bank row is ~56px tall
-                                maxHeight: '16rem' // optional: limit overall height
-                            }}
-                            >
-                            {BANKS.map((bank) => (
-                            <label
-                                key={bank.id}
-                                className="flex text-[#312B5B] items-center gap-3 p-1.5 cursor-pointer rounded hover:bg-white group transition-colors"
-                            >
-                                <input
-                                type="radio"
-                                checked={selectedBank === bank.id}
-                                onChange={() => setSelectedBank(bank.id)}
-                                className="accent-[#312B5B] scale-75"
-                                />
-
-                                <img src={bank.logo} alt="" className="w-10 h-10 object-contain p-1 rounded" />
-
-                                <div>
-                                <p className="text-sm font-bold leading-none text-[#312B5B]">
-                                    {bank.name}
-                                </p>
-                                <p className="text-xs leading-tight text-[#312B5B]">
-                                    {bank.description}
-                                </p>
-                                </div>
-                            </label>
-                            ))}
-                            </div>
-                        </div>
-                    )}
-
                     {method === 'card' && (
-                    <div className="rounded space-y-2">
+                    <div >
                         <p className="p-2 text-xs font-bold text-[#312B5B]">
-                        How would you like to send money?
+                            What type of card are you using?
                         </p>
                         
                         <div
@@ -458,18 +418,18 @@ const PaymentPage: React.FC = () => {
                             maxHeight: '16rem' // optional: limit overall height
                         }}
                         >
-
+                    
                         {CARDS.map((card) => {
                         const isSelected = selectedCard === card.id;
                         const Icon = card.logo;
-
+                    
                         return (
                             <div
                             key={card.id}
-                            className={`text-xs rounded-md transition-all border border-[#312B5B] w-[95%] mx-auto ${
+                            className={`rounded-md text-xs transition-all duration-300 w-full lg:w-[98%] mx-auto overflow-hidden ${
                                 isSelected
-                                ? "border-[#312B5B] bg-[#F7F8FA]"
-                                : "border-transparent"
+                                ? "border-[#312B5B] bg-[#F7F8FA] shadow-sm"
+                                : "border-transparent hover:bg-gray-50"
                             }`}
                             >
                             <label className="flex items-center gap-4 p-2 cursor-pointer">
@@ -478,14 +438,14 @@ const PaymentPage: React.FC = () => {
                                 name="paymentMethod"
                                 checked={isSelected}
                                 onChange={() => setSelectedCard(card.id)}
-                                className="mt-1.5 w-4 h-4 accent-[#312B5B]"
+                                className="w-4 h-4 accent-[#312B5B] shrink-0"
                                 />
-
+                    
                                 <Icon
                                 className="w-5 h-5 text-[#312B5B] shrink-0"
                                 strokeWidth={1.5}
                                 />
-
+                    
                                 <div className="flex flex-col">
                                 <span className="text-sm font-bold text-[#312B5B]">
                                     {card.name}
@@ -502,11 +462,69 @@ const PaymentPage: React.FC = () => {
                     </div>
                     )}
 
+                    {method === 'bank' && (
+                        <div>
+                            <p className="p-2 text-xs font-bold text-[#312B5B]">
+                                What bank will you use?
+                            </p>
+                            <div
+                            className="space-y-2 overflow-y-auto"
+                            style={{
+                                minHeight: `${3 * 56}px`, 
+                                maxHeight: '16rem'
+                            }}
+                            >
+                            {BANKS.map((bank) => {
+                            const isSelected = selectedBank === bank.id;
+
+                            return (
+                                <div
+                                key={bank.id}
+                                className={`rounded-md text-xs transition-all duration-300 w-full lg:w-[98%] mx-auto overflow-hidden ${
+                                    isSelected
+                                    ? "border-[#312B5B] bg-[#F7F8FA] shadow-sm"
+                                    : "border-transparent hover:bg-gray-50"
+                                }`}
+                                >
+                                <label className="flex items-center gap-4 p-2 cursor-pointer">
+                                    <input
+                                    type="radio"
+                                    name="bank"
+                                    checked={isSelected}
+                                    onChange={() => setSelectedBank(bank.id)}
+                                    className="w-4 h-4 accent-[#312B5B] shrink-0"
+                                    />
+
+                                    <img
+                                    src={bank.logo}
+                                    alt=""
+                                    className="w-5 h-5 object-contain shrink-0"
+                                    />
+
+                                    <div className="flex flex-col">
+                                    <span className="text-sm font-bold text-[#312B5B]">
+                                        {bank.name}
+                                    </span>
+                                    <span className="text-xs text-[#312B5B]">
+                                        {bank.description}
+                                    </span>
+                                    </div>
+                                </label>
+                                </div>
+                            );
+                            })}
+
+
+                            </div>
+                        </div>
+                    )}
+
+
                     {method === 'online' && (
                     <div>
                         <p className="p-2 text-xs font-bold text-[#312B5B]">
-                            What bank will you use?
-                            </p>
+                            What type of online banking would you use?
+                        </p>
                         <div className="flex mb-3 w-[70%] mx-auto">
                             
                         <label className="relative flex-1 cursor-pointer">
@@ -596,13 +614,13 @@ const PaymentPage: React.FC = () => {
                                 : "border-transparent hover:bg-gray-50"
                             }`}
                             >
-                            <label className="flex items-center gap-4 p-3 cursor-pointer">
+                            <label className="flex items-center gap-4 p-2 cursor-pointer">
                                 <input
                                 type="radio"
                                 name="onlineMethod"
                                 checked={isSelected}
                                 onChange={() => setSelectedOnlineBank(bank.id)}
-                                className="w-4 h-4 accent-[#312B5B] cursor-pointer"
+                                className="w-4 h-4 accent-[#312B5B] shrink-0"
                                 />
 
                                 <div className="w-10 h-10 rounded flex items-center justify-center shrink-0 overflow-hidden">
@@ -618,7 +636,7 @@ const PaymentPage: React.FC = () => {
                                     {bank.name}
                                 </span>
 
-                                <span className="text-xs text-[#312B5B] mt-0.5">
+                                <span className="text-xs text-[#312B5B]">
                                     {bank.description}
                                 </span>
 
@@ -640,7 +658,7 @@ const PaymentPage: React.FC = () => {
                         <div>
                         
                             <p className="p-2 text-xs font-bold text-[#312B5B]">
-                                How would you like to send money?
+                                What kind of OTC do you prefer?
                             </p>
 
                         <div
@@ -669,7 +687,7 @@ const PaymentPage: React.FC = () => {
                                 name="onlineMethod"
                                 checked={isSelected}
                                 onChange={() => setSelectedOnlineOTC(otc.id)}
-                                className="w-4 h-4 accent-[#312B5B] cursor-pointer"
+                                className="w-4 h-4 accent-[#312B5B] shrink-0"
                                 />
 
                                 <div className="w-5 h-5 rounded flex items-center justify-center shrink-0 overflow-hidden">
@@ -698,7 +716,7 @@ const PaymentPage: React.FC = () => {
                         <div>
                         
                             <p className="p-2 text-xs font-bold text-[#312B5B]">
-                                How would you like to send money?
+                                What will you use?
                             </p>
                         <div
                         className="space-y-2 overflow-y-auto"
@@ -720,13 +738,13 @@ const PaymentPage: React.FC = () => {
                                 : "border-transparent hover:bg-gray-50"
                             }`}
                             >
-                            <label className="flex items-center gap-4 p-3 cursor-pointer">
+                            <label className="flex items-center gap-4 p-2 cursor-pointer">
                                 <input
                                 type="radio"
                                 name="onlineMethod"
                                 checked={isSelected}
                                 onChange={() => setSelectedOnlineWallet(wallet.id)}
-                                className="w-4 h-4 accent-[#312B5B] cursor-pointer"
+                                className="w-4 h-4 accent-[#312B5B] shrink-0"
                                 />
 
                                 <div className="w-10 h-10 rounded flex items-center justify-center shrink-0 overflow-hidden">
