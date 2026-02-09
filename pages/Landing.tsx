@@ -361,7 +361,7 @@ const PaymentPage: React.FC = () => {
                                     className={`w-full py-2 border rounded-lg text-xs font-semibold transition-all ${
                                     amount === val 
                                         ? 'bg-[#312B5B] border-[#312B5B] text-white' 
-                                        : 'border-slate-100 text-slate-500 hover:border-slate-300'
+                                        : 'border-slate-100 text-slate-500 hover:border-slate-300 cursor-pointer'
                                     }`}
                                 >
                                     ₱{val.toLocaleString()}
@@ -388,7 +388,7 @@ const PaymentPage: React.FC = () => {
                                         :
                                     method === item.id 
                                     ? 'bg-[#312B5B] border-[#312B5B] text-white' 
-                                    : 'border-slate-100 text-slate-500 hover:border-slate-300' 
+                                    : 'border-slate-100 text-slate-500 hover:border-slate-300 cursor-pointer' 
                                 }`}
                             >
                                 
@@ -447,7 +447,7 @@ const PaymentPage: React.FC = () => {
 
                     {method === 'card' && (
                     <div className="rounded space-y-2">
-                        <p className="text-xs font-bold text-[#312B5B]">
+                        <p className="p-2 text-xs font-bold text-[#312B5B]">
                         How would you like to send money?
                         </p>
                         
@@ -504,7 +504,11 @@ const PaymentPage: React.FC = () => {
 
                     {method === 'online' && (
                     <div>
+                        <p className="p-2 text-xs font-bold text-[#312B5B]">
+                            What bank will you use?
+                            </p>
                         <div className="flex mb-3 w-[70%] mx-auto">
+                            
                         <label className="relative flex-1 cursor-pointer">
                             <input
                             type="radio"
@@ -635,6 +639,10 @@ const PaymentPage: React.FC = () => {
                     {method === 'otc' && (
                         <div>
                         
+                            <p className="p-2 text-xs font-bold text-[#312B5B]">
+                                How would you like to send money?
+                            </p>
+
                         <div
                         className="space-y-2 overflow-y-auto"
                         style={{
@@ -689,6 +697,9 @@ const PaymentPage: React.FC = () => {
                     {method === 'wallet' && (
                         <div>
                         
+                            <p className="p-2 text-xs font-bold text-[#312B5B]">
+                                How would you like to send money?
+                            </p>
                         <div
                         className="space-y-2 overflow-y-auto"
                         style={{
@@ -798,7 +809,12 @@ const PaymentPage: React.FC = () => {
             </div>
             <div className="mt-4 lg:mt-6 w-full flex justify-center items-center">
                 <button
-                    className="w-1/2 md:w-1/2 lg:w-1/3 bg-linear-to-r from-[#2B3565] to-[#0171A3] hover:bg-[#0a4669] text-white py-2 rounded font-bold text-sm transition-all shadow-md active:scale-97"
+                    disabled={amount <= 0}
+                    className={`w-1/2 md:w-1/2 lg:w-1/3 py-2 rounded font-bold text-sm transition-all duration-300 shadow-md transform
+                    ${amount > 0 
+                        ? 'bg-linear-to-r from-[#2B3565] to-[#0171A3] text-white cursor-pointer hover:from-[#312B5B] hover:to-[#0182B5] hover:shadow-lg hover:-translate-y-0.5 active:scale-95'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
                     onClick={handlePaymentSuccess}
                 >
                     Pay Now
