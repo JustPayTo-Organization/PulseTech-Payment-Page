@@ -828,9 +828,9 @@ const PaymentPage: React.FC = () => {
             </div>
             <div className="mt-4 lg:mt-6 w-full flex justify-center items-center">
                 <button
-                    disabled={amount <= 0}
+                    disabled={amount <= 99}
                     className={`w-1/2 md:w-1/2 lg:w-1/3 py-2 rounded font-bold text-sm transition-all duration-300 shadow-md transform
-                    ${amount > 0 
+                    ${amount > 99
                         ? 'bg-linear-to-r from-[#2B3565] to-[#0171A3] text-white cursor-pointer hover:from-[#312B5B] hover:to-[#0182B5] hover:shadow-lg hover:-translate-y-0.5 active:scale-95'
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
