@@ -98,7 +98,7 @@
                 </div>
 
                 {/* Action Buttons */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 w-full md:pt-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5 lg:gap-10 w-full md:pt-10">
                     <button className="flex w-[60%] md:w-full mx-auto items-center justify-center gap-1 border border-[#312B5B] text-[#312B5B] hover:shadow-lg hover:-translate-y-0.5 active:scale-95 font-semibold py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors sm">
                     <Printer size={14} />
                         Print Receipt
