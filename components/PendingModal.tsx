@@ -48,7 +48,7 @@ const PendingModal: React.FC = () => {
 
                     <h1 className="text-black text-2xl font-bold mb-1">Pending...</h1>
                     
-                    <div className="text-[#312B5B] opacity-90 text-xs md:text-sm leading-snug mb-10 max-w-xs">
+                    <div className="text-[#312B5B] opacity-90 text-xs md:text-sm leading-snug mb-10 max-w-lg">
                         <p>Thank you for your payment request.</p>
                         <p>Your transaction is currently pending and is being processed.</p>
                     </div>
@@ -74,7 +74,7 @@ const PendingModal: React.FC = () => {
                     {/* Action Button */}
                     <div className="w-full flex justify-center">
                         <button 
-                            className="w-full max-w-[240px] bg-linear-to-r from-[#2B3565] to-[#0171A3] hover:from-[#312B5B] hover:to-[#0182B5] hover:shadow-lg hover:-translate-y-0.5 active:scale-95 text-white font-semibold py-2.5 px-4 rounded-lg transition-all shadow-md text-xs"
+                            className="w-full max-w-60 bg-linear-to-r from-[#2B3565] to-[#0171A3] hover:from-[#312B5B] hover:to-[#0182B5] hover:shadow-lg hover:-translate-y-0.5 active:scale-95 text-white font-semibold py-2.5 px-4 rounded-lg transition-all shadow-md text-xs"
                             onClick={() => navigate("/")}
                         >
                             Make Another Payment

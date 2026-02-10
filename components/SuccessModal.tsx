@@ -60,7 +60,7 @@
                 </div>
 
                 <h1 className="text-[#312B5B] text-xl md:text-lg font-bold mb-1">Payment Successful</h1>
-                <p className="text-[#6F7282] sm leading-snug mb-4 max-w-100">
+                <p className="text-[#6F7282] text-xs md:text-sm sm leading-snug mb-4 max-w-100">
                     Thank you for your payment. Your payment has been processed successfully.
                 </p>
 
@@ -99,17 +99,16 @@
 
                 {/* Action Buttons */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5 lg:gap-10 w-full md:pt-10">
-                    <button className="flex w-[60%] md:w-full mx-auto items-center justify-center gap-1 border border-[#312B5B] text-[#312B5B] hover:shadow-lg hover:-translate-y-0.5 active:scale-95 font-semibold py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors sm">
+                    <button className="flex w-[60%] md:w-full mx-auto items-center justify-center gap-1 border border-[#312B5B] text-[#312B5B] hover:shadow-lg hover:-translate-y-0.5 active:scale-95 font-semibold py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors sm text-xs">
                     <Printer size={14} />
                         Print Receipt
                     </button>
                     <button 
-                        className="bg-linear-to-r from-[#2B3565] to-[#0171A3] hover:from-[#312B5B] hover:to-[#0182B5] hover:shadow-lg hover:-translate-y-0.5 active:scale-95 w-[60%] md:w-full mx-auto text-white font-semibold py-3 px-4 rounded-lg transition-colors shadow-md sm"
-                        onClick={ () => navigate ("/")}
-                    >
-                    
-                        Make Another Payment
-                    </button>
+                            className="w-full max-w-60 bg-linear-to-r from-[#2B3565] to-[#0171A3] hover:from-[#312B5B] hover:to-[#0182B5] hover:shadow-lg hover:-translate-y-0.5 active:scale-95 text-white font-semibold py-2.5 px-4 rounded-lg transition-all shadow-md text-xs"
+                            onClick={() => navigate("/")}
+                        >
+                            Make Another Payment
+                        </button>
                 </div>
                 </div>
             </div>
