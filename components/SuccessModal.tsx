@@ -19,19 +19,12 @@
         if (!paymentSummary) return <p>No payment details available.</p>;
 
         // const { totalAmount, method, _subTotal, _processingFee, _systemFee } = paymentSummary;
-        const { totalAmount, method} = paymentSummary;
+        const { totalAmount, method, referenceNo, dateTime} = paymentSummary;
 
         const paymentDetails = {
             amount: totalAmount,
-            referenceNo: generateReference(paymentSummary.methodId),
-            dateTime: new Date().toLocaleString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: true
-            }),
+            referenceNo: referenceNo,
+            dateTime:dateTime,
             method: method
         };
 

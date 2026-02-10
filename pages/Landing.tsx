@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 
 import { useNavigate } from "react-router-dom";
+import generateReference from '../components/reference_generator/reference_generator';
 
 // --- Types & Interfaces ---
 interface PaymentMethod {
@@ -300,6 +301,7 @@ const PaymentPage: React.FC = () => {
     const [testStatus, setTestStatus] = useState<"pending" | "success" | "failed">("pending");
 
     const handlePaymentSuccess = () => {
+        const referenceNo = generateReference(selectedMethodId);
 
         // Build full summary object
         const paymentSummary = {
@@ -309,6 +311,15 @@ const PaymentPage: React.FC = () => {
             totalAmount,
             method: selectedMethodLabel,
             methodId: selectedMethodId, 
+            referenceNo, // <- pass it here
+            dateTime: new Date().toLocaleString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true
+        }),
         };
 
         // Navigate to /success and pass full summary
