@@ -528,7 +528,7 @@ const PaymentPage: React.FC = () => {
                         <p className="p-2 text-xs font-bold text-[#312B5B]">
                             What type of online banking would you use?
                         </p>
-                        <div className="flex mb-3 w-[70%] mx-auto">
+                        <div className="flex mb-3 w-[60%] md:w-[70%] mx-auto items-center justify-center">
                             
                         <label className="relative flex-1 cursor-pointer">
                             <input
@@ -541,7 +541,7 @@ const PaymentPage: React.FC = () => {
                             />
 
                             <div
-                            className={`flex items-center justify-center gap-3 py-3 px-4 rounded-tl rounded-bl transition-all duration-200 ${
+                            className={`flex items-center justify-center whitespace-nowrap gap-3 py-3 px-4 rounded-tl rounded-bl transition-all duration-200 ${
                                 onlineSelectedDevice === "desktop"
                                 ? "bg-[#312B5B] text-white shadow-md"
                                 : "text-[#312B5B] hover:bg-gray-200"
@@ -574,7 +574,7 @@ const PaymentPage: React.FC = () => {
                             />
 
                             <div
-                            className={`flex items-center justify-center gap-3 py-3 px-4 rounded-tr rounded-br transition-all duration-200 ${
+                            className={`flex items-center justify-center whitespace-nowrap  gap-3 py-3 px-4 rounded-tr rounded-br transition-all duration-200 ${
                                 onlineSelectedDevice === "mobile"
                                 ? "bg-[#312B5B] text-white shadow-md"
                                 : "text-[#312B5B] hover:bg-gray-200"

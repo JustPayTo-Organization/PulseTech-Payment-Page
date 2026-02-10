@@ -73,7 +73,7 @@
                     
                         <div className=" border-[#6F7282] border-t border-dashed pt-2 mb-3 mx-3"/>
 
-                        <div className="sm p-3 px-3">
+                        <div className="sm p-3 px-3 text-xs">
                             <div className="flex justify-between my-3">
                             <span className="text-[#312B5B]">Reference No.</span>
                             <span className="text-[#312B5B] font-medium break-all ml-2">{paymentDetails.referenceNo}</span>
@@ -92,7 +92,7 @@
 
                 {/* Security Footer */}
                 <div className="bg-white border border-gray-100 rounded-bl-xl rounded-br-xl py-5 px-3 mb-4 shadow-lg w-full">
-                    <p className="text-sm text-[#6F7282]">
+                    <p className="text-[11px] text-[#6F7282]">
                     Make sure the browser bar displays <span className="font-bold text-[#312B5B]">PulseTech</span>
                     </p>
                 </div>
