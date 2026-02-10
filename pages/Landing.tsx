@@ -323,8 +323,8 @@ const PaymentPage: React.FC = () => {
         };
 
         // Navigate to /success and pass full summary
-        // navigate("/status/pending", { state: { paymentSummary } });
-        navigate(`/status/${testStatus}`, { state: { paymentSummary } });
+        navigate("/status/success", { state: { paymentSummary } });
+        // navigate(`/status/${testStatus}`, { state: { paymentSummary } });
     };
 
 
@@ -853,7 +853,7 @@ const PaymentPage: React.FC = () => {
                     Pay Now
                 </button>
             </div>
-            <div className="flex justify-center gap-2 mb-4">
+            {/* <div className="flex justify-center gap-2 mb-4">
             {["pending", "success", "failed"].map((status) => (
                 <button
                     key={status}
@@ -867,7 +867,7 @@ const PaymentPage: React.FC = () => {
                     {status}
                 </button>
             ))}
-        </div>
+        </div> */}
 
         </div>
         </div>
