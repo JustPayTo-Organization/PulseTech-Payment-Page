@@ -334,7 +334,7 @@ const PaymentPage: React.FC = () => {
             setAvailableOTCBanks(apiData.over_the_counter || [])
             setAvailableWalletBanks(apiData.e_wallet || [])
             setApiResponse(apiData)
-            console.log("response", apiData)
+            // console.log("response", apiData)
 
             const updatedMethods = PAYMENT_METHODS.map((method) => {
                 const apiKey = METHOD_API_MAP[method.id];
@@ -351,7 +351,7 @@ const PaymentPage: React.FC = () => {
             });
 
             setPaymentMethods(updatedMethods);
-            console.log("updatedMethods = ", updatedMethods)
+            // console.log("updatedMethods = ", updatedMethods)
             } catch (err) {
             if (err instanceof Error) setError(err.message);
             else setError("Something went wrong");
@@ -373,7 +373,7 @@ const PaymentPage: React.FC = () => {
             case "card":
                 {
                     const cardData = apiResponse?.mastercard_visa?.[0];
-                    console.log("cardData",cardData)
+                    // console.log("cardData",cardData)
                 if (cardData) {
                     methodCode = cardData.method_code;
                     providerCode = cardData.provider_code;
@@ -443,7 +443,7 @@ const PaymentPage: React.FC = () => {
         setMethodCodePayload(methodCode);
         setProviderCodePayload(providerCode);
 
-        console.log("methodCode:", methodCode, "providerCode:", providerCode);
+        // console.log("methodCode:", methodCode, "providerCode:", providerCode);
     }, [username, method, selectedBank, selectedOnlineBank, selectedOnlineOTC, selectedOnlineWallet]);
 
     const selectedMethodId = (() => {
@@ -483,8 +483,8 @@ const PaymentPage: React.FC = () => {
     // const [testStatus, setTestStatus] = useState<"pending" | "success" | "failed">("pending");
 
     const handlePaymentSuccess = async() => {
-        console.log(success_url)
-        console.log(failed_url)
+        // console.log(success_url)
+        // console.log(failed_url)
 
         try{
             const referenceNo = generateReference(selectedMethodId);
@@ -531,7 +531,7 @@ const PaymentPage: React.FC = () => {
             }
 
             const data = await payment_response.json()
-            console.log("API response:", data);
+            // console.log("API response:", data);
 
             switch (data.status) {
                 case "SUCCESS":
@@ -589,7 +589,7 @@ const PaymentPage: React.FC = () => {
     }, [availableBanks, methodCodePayload, providerCodePayload, method]);
 
     useEffect(() => {
-        console.log("Selected bank changed:", selectedBank);
+        // console.log("Selected bank changed:", selectedBank);
     }, [selectedBank]);
 
     return (
