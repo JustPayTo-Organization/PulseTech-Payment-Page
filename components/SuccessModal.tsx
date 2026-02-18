@@ -27,7 +27,7 @@
             method: method
         };
 
-        console.log(paymentSummary.methodId)
+        // console.log(paymentSummary.methodId)
         return (
             <div className="min-h-screen w-full flex flex-col items-center justify-center bg-linear-to-br from-[#FFFFFF] to-[#D0BBE6] p-2 font-sans">
             

@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 
 import { useNavigate } from "react-router-dom";
-import generateReference from '../components/reference_generator/reference_generator';
+// import generateReference from '../components/reference_generator/reference_generator';
 
 // --- Types & Interfaces ---
 interface PaymentMethod {
@@ -76,6 +76,17 @@ type apiResponse = {
     over_the_counter  : OTCTransfer[];
 }
 
+type paymentResponse = {
+    transaction_id: string;
+    currency      : string;
+    created_at    : string;
+    status        : string;
+    reference_id  : string;
+    type          : string;
+    error         : string | null;
+    amount        : string;
+    redirect_url  : string | null;
+}
 
 const PRESET_AMOUNTS = [100, 500, 1000, 2500, 5000, 10000];
 
@@ -215,6 +226,7 @@ const PaymentPage: React.FC = () => {
     const [ selectedOnlineBank, setSelectedOnlineBank] = useState<string>('');
     const [ selectedOnlineOTC, setSelectedOnlineOTC] = useState<string>('');
     const [ selectedOnlineWallet, setSelectedOnlineWallet] = useState<string>('');
+    const [ processingFee, setProcessingFee] = useState<string | null>('');
 
     // const [ creditCardName, setCreditCardName] = useState("");
     // const [ creditCardNumber, setCreditCardNumber] = useState("");
@@ -236,10 +248,12 @@ const PaymentPage: React.FC = () => {
 
     const [summaryHeight, setSummaryHeight] = useState<number | undefined>(undefined);
     
-    const PROCESSING_FEE = 10;
-    const SYSTEM_FEE = 10;
+    // const PROCESSING_FEE = 10;
+    const SYSTEM_FEE = amount >= 100 ? 10 : 0;
 
-    const totalAmount = useMemo(() => amount + PROCESSING_FEE + SYSTEM_FEE, [amount]);
+    const PROCESSING_FEE = Number(processingFee ?? 0);
+
+    const totalAmount = useMemo(() => amount + PROCESSING_FEE + SYSTEM_FEE, [amount, PROCESSING_FEE]);
 
     const success_url         = import.meta.env.VITE_SUCCESS_REDIRECT_URL;
     const failed_url          = import.meta.env.VITE_FAILED_REDIRECT_URL;
@@ -295,11 +309,11 @@ const PaymentPage: React.FC = () => {
     const [ availableOnlineBanks, setAvailableOnlineBanks ] = useState<OnlineBanks[]>([]);
     const [ availableOTCBanks, setAvailableOTCBanks ] = useState<OTCTransfer[]>([]);
     const [ availableWalletBanks, setAvailableWalletBanks] = useState<WalletTransfer[]>([]);
-
     // function sleep(ms: number) {
     //     return new Promise((resolve) => setTimeout(resolve, ms));
     // }
     const [ apiResponse, setApiResponse] = useState<apiResponse>();
+    const [ paymentResponse, setPaymentResponse] = useState<paymentResponse>();
     const [ methodCodePayload, setMethodCodePayload] = useState("bank_card_2");
     const [ providerCodePayload, setProviderCodePayload] = useState("mastercard_visa");
 
@@ -334,6 +348,7 @@ const PaymentPage: React.FC = () => {
             setAvailableOTCBanks(apiData.over_the_counter || [])
             setAvailableWalletBanks(apiData.e_wallet || [])
             setApiResponse(apiData)
+            
             // console.log("response", apiData)
 
             const updatedMethods = PAYMENT_METHODS.map((method) => {
@@ -375,8 +390,10 @@ const PaymentPage: React.FC = () => {
                     const cardData = apiResponse?.mastercard_visa?.[0];
                     // console.log("cardData",cardData)
                 if (cardData) {
-                    methodCode = cardData.method_code;
-                    providerCode = cardData.provider_code;
+                    methodCode      = cardData.method_code;
+                    providerCode    = cardData.provider_code;
+                    // processing_fee = cardData.
+
                 }
                 break;
             }
@@ -386,7 +403,7 @@ const PaymentPage: React.FC = () => {
                 );
 
                 if (selectedBankData) {
-                    methodCode = selectedBankData.method_code;
+                    methodCode   = selectedBankData.method_code;
                     providerCode = selectedBankData.provider_code;
                 } else {
                     console.warn("Selected bank not found in API response:", selectedBank);
@@ -400,7 +417,7 @@ const PaymentPage: React.FC = () => {
                 );
 
                 if (selectedOnlineBankData) {
-                    methodCode = selectedOnlineBankData.method_code;
+                    methodCode   = selectedOnlineBankData.method_code;
                     providerCode = selectedOnlineBankData.provider_code;
                 } else {
                     console.warn("Selected online bank not found in API response:", selectedOnlineBank);
@@ -414,7 +431,7 @@ const PaymentPage: React.FC = () => {
                 );
 
                 if (selectedOTCBankData) {
-                    methodCode = selectedOTCBankData.method_code;
+                    methodCode   = selectedOTCBankData.method_code;
                     providerCode = selectedOTCBankData.provider_code;
                 } else {
                     console.warn("Selected otc bank not found in API response:", selectedOnlineOTC);
@@ -428,7 +445,7 @@ const PaymentPage: React.FC = () => {
                 );
 
                 if (selectedWalletData) {
-                    methodCode = selectedWalletData.method_code;
+                    methodCode   = selectedWalletData.method_code;
                     providerCode = selectedWalletData.provider_code;
                 } else {
                     console.warn("Selected wallet bank not found in API response:", selectedOnlineWallet);
@@ -444,7 +461,7 @@ const PaymentPage: React.FC = () => {
         setProviderCodePayload(providerCode);
 
         // console.log("methodCode:", methodCode, "providerCode:", providerCode);
-    }, [username, method, selectedBank, selectedOnlineBank, selectedOnlineOTC, selectedOnlineWallet]);
+    }, [username, method, selectedBank, selectedOnlineBank, selectedOnlineOTC, selectedOnlineWallet, paymentResponse]);
 
     const selectedMethodId = (() => {
         switch (method) {
@@ -487,27 +504,6 @@ const PaymentPage: React.FC = () => {
         // console.log(failed_url)
 
         try{
-            const referenceNo = generateReference(selectedMethodId);
-
-            // Build full summary object
-            const paymentSummary = {
-                subTotal: amount,
-                processingFee: PROCESSING_FEE,
-                systemFee: SYSTEM_FEE,
-                totalAmount,
-                method: selectedMethodLabel,
-                methodId: selectedMethodId, 
-                referenceNo, // <- pass it here
-                dateTime: new Date().toLocaleString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: true
-            }),
-
-            };
 
             const payload = {
                 amount              : amount,
@@ -532,6 +528,29 @@ const PaymentPage: React.FC = () => {
 
             const data = await payment_response.json()
             // console.log("API response:", data);
+
+            
+            // Build full summary object
+            const paymentSummary = {
+                subTotal: amount,
+                processingFee: data.fees.processing_fee,
+                systemFee: data.fees.system_fee,
+                totalAmount,
+                method: selectedMethodLabel,
+                methodId: selectedMethodId, 
+                referenceNo: data.reference_id, 
+                dateTime: new Date().toLocaleString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true
+                }),
+
+            };
+
+            setPaymentResponse(data);
 
             switch (data.status) {
                 case "SUCCESS":
