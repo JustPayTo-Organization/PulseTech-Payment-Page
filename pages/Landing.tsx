@@ -226,7 +226,7 @@ const PaymentPage: React.FC = () => {
     const [ selectedOnlineBank, setSelectedOnlineBank] = useState<string>('');
     const [ selectedOnlineOTC, setSelectedOnlineOTC] = useState<string>('');
     const [ selectedOnlineWallet, setSelectedOnlineWallet] = useState<string>('');
-    const [ processingFee, setProcessingFee] = useState<string | null>('');
+    const [ processingFee, _setProcessingFee] = useState<string | null>('');
 
     // const [ creditCardName, setCreditCardName] = useState("");
     // const [ creditCardNumber, setCreditCardNumber] = useState("");
