@@ -260,9 +260,10 @@ const PaymentPage: React.FC = () => {
 
     const totalAmount = useMemo(() => amount + PROCESSING_FEE + SYSTEM_FEE, [amount, PROCESSING_FEE, SYSTEM_FEE]);
 
-    const success_url         = import.meta.env.VITE_SUCCESS_REDIRECT_URL;
-    const failed_url          = import.meta.env.VITE_FAILED_REDIRECT_URL;
-    const base_url            = import.meta.env.VITE_API_BASE_URL;
+    const base_url            = import.meta.env.VITE_BASE_URL;
+    const success_url         = `${base_url}/${merchant_username}/status/success`;
+    const failed_url          = `${base_url}/${merchant_username}/status/failed`;
+    const api_base_url            = import.meta.env.VITE_API_BASE_URL;
     const username            = import.meta.env.VITE_USERNAME;
     const payment_methods_url = import.meta.env.VITE_PAYMENT_METHODS_URL;
     const merchant_name_url   = import.meta.env.VITE_MERCHANT_URL;
@@ -586,7 +587,7 @@ const PaymentPage: React.FC = () => {
                 failed_redirect_url : failed_url
             }
 
-            const payment_response = await fetch(`${base_url}/payment-page/payment`, {
+            const payment_response = await fetch(`${api_base_url}/payment-page/payment`, {
                 method: "POST",
                 headers: {
                     "username": username,
