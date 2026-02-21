@@ -35,16 +35,19 @@ type redirectResponse = {
     }
 }
 const SuccessModal: React.FC = () => {
-
+    
     const api_base_url = import.meta.env.VITE_API_BASE_URL
 
     const navigate = useNavigate();
+      // const location                             = useLocation();
     const { merchant_username }                = useParams();
     const [searchParams]                       = useSearchParams();
     const reference_id                         = searchParams.get("reference_id");
     const [ _loading, setLoading ]             = useState(false);
     const [ _error, setError ]                 = useState<string | null>(null);
     const [ paymentSummary, setPaymentSummary] = useState <redirectResponse | null > (null);
+
+    // const { paymentSummary } = location.state || {};
     
     const receiptRef = useRef<HTMLDivElement>(null);
 
@@ -58,12 +61,13 @@ const SuccessModal: React.FC = () => {
                 setError(null);
 
                 const response = await fetch(
-                    `${api_base_url}/payment-page/${merchant_username}/payment/${reference_id}`,
+                    `${api_base_url}/payment-page/${merchant_username}/payment?transaction_id=${encodeURIComponent(reference_id)}`,
                     {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json"
                         }
+                        // body: JSON.stringify({})
                     }
                 );
 
@@ -92,7 +96,9 @@ const SuccessModal: React.FC = () => {
 
     if (!paymentSummary) return <p>No payment details available.</p>
 
-    const totalAmount = (paymentSummary.amount ?? 0) + Number(paymentSummary.fees?.processing_fee ?? 0) + Number(paymentSummary.fees?.system_fee ?? 0)
+    // const { totalAmount, method, _subTotal, _processingFee, _systemFee } = paymentSummary;
+    // const { totalAmount, method, referenceNo, dateTime, merchantName} = paymentSummary;
+    const totalAmount = (Number(paymentSummary?.amount)) + (Number(paymentSummary?.fees?.processing_fee)) + (Number(paymentSummary?.fees?.system_fee))
 
     const handleDownload = async () => {
         if (!receiptRef.current) return;
