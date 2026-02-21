@@ -92,45 +92,7 @@ const SuccessModal: React.FC = () => {
             }
         };
 
-        const fetchMerchantName = async () => {
-            try {
-                setLoading(true);
-                setError(null);
-
-                const response = await fetch(
-                    `${api_base_url}/payment-page/${merchant_username}`,
-                    {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json"
-                        }
-                        // body: JSON.stringify({})
-                    }
-                );
-
-                if (!response.ok) {
-                    throw new Error("Failed to fetch merchant name");
-                }
-
-                const data = await response.json();
-                // set(data);
-                console.log("Merchant name response:", data);
-
-            } catch (err: unknown) {
-                console.error(err);
-
-                if (err instanceof Error) {
-                    setError(err.message);
-                } else {
-                    setError("Something went wrong");
-                }
-            } finally {
-                setLoading(false);
-            }
-        };
-
             fetchPaymentStatus();
-            fetchMerchantName();
     }, [merchant_username, reference_id]);
 
     if (!paymentSummary) return <p>No payment details available.</p>
