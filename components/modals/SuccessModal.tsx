@@ -151,7 +151,7 @@ const SuccessModal: React.FC = () => {
 
 
     const Spinner = () => (
-        <span className="inline-block w-8 h-8 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
+        <span className="inline-block w-16 h-16 border-4 border-gray-300 border-t-[#312B5B] rounded-full animate-spin" />
     );
 
     //Loading state
