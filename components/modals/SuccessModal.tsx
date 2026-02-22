@@ -53,88 +53,76 @@ const SuccessModal: React.FC = () => {
     const receiptRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-
         if (!merchant_username || !reference_id) return;
 
-        const fetchPaymentStatus = async () => {
+        const fetchData = async () => {
             try {
-                setLoading(true);
-                setError(null);
+            setLoading(true);
+            setError(null);
 
-                const response = await fetch(
-                    `${api_base_url}/payment-page/${merchant_username}/payment?transaction_id=${encodeURIComponent(reference_id)}`,
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        }
-                        // body: JSON.stringify({})
-                    }
-                );
-
-                if (!response.ok) {
-                    throw new Error("Failed to verify payment");
+            const [paymentRes, merchantRes] = await Promise.all([
+                fetch(
+                `${api_base_url}/payment-page/${merchant_username}/payment?transaction_id=${encodeURIComponent(reference_id)}`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
                 }
+                ),
+                fetch(`${api_base_url}/payment-page/${merchant_username}`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+                }),
+            ]);
 
-                const data = await response.json();
-                setPaymentSummary(data);
-                console.log("Verification response:", data);
+            if (!paymentRes.ok) throw new Error("Failed to verify payment");
+            if (!merchantRes.ok) throw new Error("Failed to fetch merchant");
 
-            } catch (err: unknown) {
-                console.error(err);
+            const paymentData = await paymentRes.json();
+            const merchantData = await merchantRes.json();
 
-                if (err instanceof Error) {
-                    setError(err.message);
-                } else {
-                    setError("Something went wrong");
-                }
+            setPaymentSummary(paymentData);
+            setMerchantName(merchantData.merchant_name);
+
+            } catch (err) {
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError("Something went wrong");
+            }
             } finally {
-                setLoading(false);
+            setLoading(false);
             }
         };
 
-        const fetchMerchantName = async () => {
-            try {
-                setLoading(true);
-                setError(null);
-
-                const response = await fetch(
-                    `${api_base_url}/payment-page/${merchant_username}`,
-                    {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json"
-                        }
-                        // body: JSON.stringify({})
-                    }
-                );
-
-                if (!response.ok) {
-                    throw new Error("Failed to fetch merchant name");
-                }
-
-                const data = await response.json();
-                setMerchantName(data.merchant_name);
-                console.log("Merchant name response:", data);
-
-            } catch (err: unknown) {
-                console.error(err);
-
-                if (err instanceof Error) {
-                    setError(err.message);
-                } else {
-                    setError("Something went wrong");
-                }
-            } finally {
-                setLoading(false);
-            }
-        };
-
-            fetchPaymentStatus();
-            fetchMerchantName();
+        fetchData();
     }, [merchant_username, reference_id]);
 
-    if (!paymentSummary) return <p>No payment details available.</p>
+
+    const Spinner = () => (
+        <span className="inline-block w-8 h-8 border-4 border-white/30 border-t-blue-300 rounded-full animate-spin" />
+    );
+
+    //Loading state
+    if (_loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-[#FFFFFF] to-[#D0BBE6]">
+                <Spinner />
+            </div>
+        );
+    }
+
+    // Error State
+    if (_error) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-linear-to-br from-[#FFFFFF] to-[#D0BBE6] text-center px-4">
+                <p className="text-red-600 font-semibold mb-2">Something went wrong</p>
+                <p className="text-[#312B5B] text-sm">{_error}</p>
+            </div>
+        );
+    }
+
+    // Safety fallback (if somehow no loading, no error, but no data)
+    if (!paymentSummary) return null;
 
     // const { totalAmount, method, _subTotal, _processingFee, _systemFee } = paymentSummary;
     // const { totalAmount, method, referenceNo, dateTime, merchantName} = paymentSummary;
