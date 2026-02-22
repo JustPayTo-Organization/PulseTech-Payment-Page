@@ -227,9 +227,13 @@ const SuccessModal: React.FC = () => {
                         <span className="text-[#312B5B]">Reference No.</span>
                         <span className="text-[#312B5B] font-medium break-all ml-2">{paymentSummary.reference_id}</span>
                         </div>
-                        <div className="flex justify-between">
-                        <span className="text-[#312B5B]">Date & Time</span>
-                        <span className="text-[#312B5B] font-medium ml-2">Created at {paymentSummary.created_at}</span>
+                        <div className="flex items-start">
+                        <span className="text-[#312B5B] w-32 flex-shrink-0">
+                            Date & Time
+                        </span>
+                        <span className="text-[#312B5B] font-medium ml-2 break-all">
+                            Created at {paymentSummary.created_at}
+                        </span>
                         </div>
                         <div className="flex justify-between">
                         <span className="text-[#312B5B]">Payment Method</span>
