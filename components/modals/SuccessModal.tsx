@@ -135,8 +135,6 @@ const SuccessModal: React.FC = () => {
             setMerchantName(merchantData.merchant_name);
             setPaymentMethod(matchedName);
 
-            console.log("matched name: ", matchedName)
-            // setPaymentMethod(methodData.)
             } catch (err) {
             if (err instanceof Error) {
                 setError(err.message);
