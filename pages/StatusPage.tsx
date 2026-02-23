@@ -148,7 +148,8 @@ function StatusPage() {
     // moises
     if (status === "SUCCESS") return <SuccessModal paymentSummary={paymentSummary} merchantName={merchantName} paymentMethod={paymentMethod} />;
     if (status === "FAILED") return <FailedModal paymentSummary={paymentSummary} merchantName={merchantName}/>;
-    if (status === "PENDING") return <PendingModal paymentSummary={paymentSummary} merchantName={merchantName}/>;
+    // if (status === "PENDING") return <PendingModal paymentSummary={paymentSummary} merchantName={merchantName}/>;
+    if (status === "PENDING") return <SuccessModal paymentSummary={paymentSummary} merchantName={merchantName} paymentMethod={paymentMethod} />;
 
     return null;
 }
