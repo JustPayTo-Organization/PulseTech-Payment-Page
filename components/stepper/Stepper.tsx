@@ -7,7 +7,7 @@ interface StepperProps {
 
 const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
   return (
-    <div className="flex items-center justify-center w-full max-w-[250px] mx-auto mb-6">
+    <div className="flex items-center justify-center w-full max-w-[120px] mx-auto mb-6">
       {steps.map((step, idx) => {
         const stepNum = idx + 1;
         const isCompleted = stepNum < currentStep;
@@ -20,10 +20,10 @@ const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
           <React.Fragment key={step}>
             {/* Step Circle */}
             <div
-              className={`relative z-10 flex items-center justify-center w-10 h-10 rounded-full border-[3px] text-sm font-bold transition-colors duration-300 ${
+              className={`relative z-10 flex items-center justify-center w-6 h-6 rounded-full border-[3px] text-xs font-bold transition-colors duration-300 ${
                 isActive || isCompleted
-                  ? "bg-[#1d63ff] border-[#1d63ff] text-white"
-                  : "bg-white border-[#646c7f] text-[#1a1a1a]"
+                  ? "bg-linear-to-r from-[#2B3565] to-[#0171A3] border-[#2B3565] text-white"
+                  : "bg-white border-[#2B3565] text-[#1a1a1a]"
               }`}
             >
               {stepNum}
@@ -33,7 +33,7 @@ const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
             {idx < steps.length - 1 && (
               <div
                 className={`flex-1 h-[3px] transition-colors duration-300 ${
-                  isLineActive ? "bg-[#1d63ff]" : "bg-[#646c7f]"
+                  isLineActive ? "bg-[#2B3565]" : "bg-[#646c7f]"
                 }`}
               />
             )}

@@ -13,7 +13,7 @@ const NotFound: React.FC = () => (
             Looks like this payment link didn’t make it through. Let’s get you back on track.
         </h3>
     <div className="flex items-center justify-center">
-        <Lottie animationData={catAnimation} loop={true} className="w-150"/>
+        <Lottie animationData={catAnimation} loop={true} className="w-full md:w-150"/>
     </div>
   </div>
 );

@@ -778,7 +778,7 @@ const PaymentPage: React.FC = () => {
             
                 {/* Form Controls */}
                 <div className="lg:col-span-2 space-y-5 md:space-x-8">
-                    <div ref={formRef}>
+                    <div className="w-full" ref={formRef}>
                         <section className='mb-5'>
                             <h2 className="text-center font-bold text-[#312B5B] md:text-center">Enter Amount</h2>
                             <p className="text-xs text-center text-[#37416C] mb-2 md:text-center ">How much would you like to pay?</p>
