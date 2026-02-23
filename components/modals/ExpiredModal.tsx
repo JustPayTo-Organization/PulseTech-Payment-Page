@@ -10,14 +10,14 @@ const ExpiredModal: React.FC = () => {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-linear-to-br from-[#FFFFFF] to-[#D0BBE6]">
             <div className="flex items-center justify-center">
-                <Lottie animationData={loading} loop={true} className="w-full md:w-150" />
+                <Lottie animationData={loading} loop={true} className="w-full md:w-70" />
             </div>
 
-            <h1 className="text-9xl font-bold bg-linear-to-br from-[#2B3565] to-[#0171A3] bg-clip-text text-transparent p-5 mt-10">
+            <h1 className="text-4xl font-bold bg-linear-to-br from-[#2B3565] to-[#0171A3] bg-clip-text text-transparent p-5 mt-10 text-center">
                 Oops! This link timed out.
             </h1>
 
-            <h2 className="text-3xl font-semibold mb-5 text-center">
+            <h2 className="text-2xl bg-linear-to-br from-[#2B3565] to-[#0171A3] bg-clip-text text-transparent font-semibold mb-5 text-center">
                 Looks like this payment session has expired. Let’s get you back on track.
             </h2>
 
