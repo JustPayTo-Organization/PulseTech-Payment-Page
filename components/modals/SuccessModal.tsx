@@ -113,7 +113,7 @@ const SuccessModal: React.FC = () => {
             
             // Payment Status Redirect if Failed
             if (paymentData.status === "FAILED"){
-                navigate(`${base_url}/status/failed?reference_id=${reference_id}`, {
+                navigate(`${merchant_username}/status/failed?reference_id=${reference_id}`, {
                         state: { paymentSummary: paymentData },
                         replace: true
                     });
