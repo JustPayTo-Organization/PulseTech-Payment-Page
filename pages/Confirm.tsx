@@ -150,7 +150,7 @@ const Confirm: React.FC = () => {
                                 if (url) window.location.href = url;
                             }}
                         >
-                            Pay Now
+                            Continue
                         </button>
                     </div>
                 </div>

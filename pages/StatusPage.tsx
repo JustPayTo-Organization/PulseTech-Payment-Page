@@ -127,7 +127,7 @@ function StatusPage() {
         };
 
         fetchData();
-
+        //30 seconds refresh
         const recheckStatusInterval = setInterval(fetchData, 30_000);
 
          return () => clearInterval(recheckStatusInterval);

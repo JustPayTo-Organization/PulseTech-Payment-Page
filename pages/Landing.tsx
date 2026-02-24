@@ -1317,7 +1317,7 @@ const PaymentPage: React.FC = () => {
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
                         >
-                    {paymentLoading ? <Spinner /> : "Pay Now"}
+                    {paymentLoading ? <Spinner /> : "Continue"}
                 </button>
             </div>
             {/* <div className="flex justify-center gap-2 mb-4">
