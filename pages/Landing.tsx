@@ -264,7 +264,7 @@ const PaymentPage: React.FC = () => {
     const success_url         = `${base_url}/${merchant_username}/status`;
     const failed_url          = `${base_url}/${merchant_username}/status`;
     const api_base_url        = import.meta.env.VITE_API_BASE_URL;
-    const username            = import.meta.env.VITE_USERNAME;
+    const username            = merchant_username;
     const payment_methods_url = import.meta.env.VITE_PAYMENT_METHODS_URL;
     const merchant_name_url   = import.meta.env.VITE_MERCHANT_URL;
 
