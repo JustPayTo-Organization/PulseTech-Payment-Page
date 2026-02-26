@@ -1,6 +1,6 @@
 import './App.css';
 import Landing from '../pages/Landing';
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 // import SuccessModal from "../components/modals/SuccessModal";
 // import FailedModal from "../components/modals/FailedModal";
 // import PendingModal from "../components/modals/PendingModal";
