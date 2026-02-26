@@ -10,7 +10,7 @@ import StatusPage from "../pages/StatusPage";
 
 function App() {
 
-    const website_base_url = import.meta.env.VITE_BASE_URL;
+    const website_base_url = import.meta.env.VITE_WEBSITE_URL;
 
   return (
     <>
