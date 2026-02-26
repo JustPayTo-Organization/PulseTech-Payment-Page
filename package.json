@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
   "name": "pulse-payment-page",
+=======
+  "name": "pulsetech-dashboard",
+>>>>>>> 7bc08ca0bb4219182d20a8d60b7654c44f910c8b
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,6 +14,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@tailwindcss/vite": "^4.1.18",
     "file-saver": "^2.0.5",
     "html-to-image": "^1.11.13",
@@ -19,6 +24,19 @@
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.0",
     "tailwindcss": "^4.1.18"
+=======
+    "@mui/lab": "^7.0.1-beta.21",
+    "@tailwindcss/vite": "^4.1.18",
+    "dayjs": "^1.11.19",
+    "idb": "^8.0.3",
+    "lucide-react": "^0.562.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-icons": "^5.5.0",
+    "react-router-dom": "^7.12.0",
+    "tailwindcss": "^4.1.18",
+    "xlsx": "^0.18.5"
+>>>>>>> 7bc08ca0bb4219182d20a8d60b7654c44f910c8b
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
