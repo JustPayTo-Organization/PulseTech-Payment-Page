@@ -151,7 +151,8 @@ function StatusPage() {
     };
     if (!status) return null; // still loading status
     // moises
-    if (status === "SUCCESS") return <SuccessModal paymentSummary={paymentSummary} merchantName={merchantName} paymentMethod={paymentMethod} />;
+    // if (status === "SUCCESS") return <SuccessModal paymentSummary={paymentSummary} merchantName={merchantName} paymentMethod={paymentMethod} />;
+    if (status === "SUCCESS") return <PendingModal paymentSummary={paymentSummary} merchantName={merchantName} />;
     if (status === "FAILED") return <FailedModal paymentSummary={paymentSummary} merchantName={merchantName}/>;
     if (status === "PENDING") return <PendingModal paymentSummary={paymentSummary} merchantName={merchantName}/>;
     // if (status === "PENDING") return <SuccessModal paymentSummary={paymentSummary} merchantName={merchantName} paymentMethod={paymentMethod} />;
