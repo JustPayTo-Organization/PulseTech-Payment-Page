@@ -1,21 +1,22 @@
 import './App.css';
 import Landing from '../pages/Landing';
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 // import SuccessModal from "../components/modals/SuccessModal";
 // import FailedModal from "../components/modals/FailedModal";
 // import PendingModal from "../components/modals/PendingModal";
 import Confirm from "../pages/Confirm";
 import NotFound from "../pages/NotFound";
 import StatusPage from "../pages/StatusPage";
-import Website from "../pages/Website";
 
 function App() {
+
+    const website_base_url = import.meta.env.VITE_BASE_URL;
 
   return (
     <>
       <Router>
       <Routes>
-        <Route path="/" element={<Website />} />
+        <Route path="/" element={<Navigate to={`/${website_base_url}`} replace />} />
         <Route path="/:merchant_username" element={<Landing />} />
         {/* <Route path="/:merchant_username/status/success" element={<SuccessModal />} />
         <Route path="/:merchant_username/status/failed" element={<FailedModal />} />
