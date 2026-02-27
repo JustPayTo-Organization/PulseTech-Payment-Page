@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import './App.css';
 import Landing from '../pages/Landing';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -32,19 +31,6 @@ function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
-=======
-// import Login from './pages/Login'
-import { BrowserRouter } from "react-router-dom";
-import Layout from './layouts/Layout';
-
-function App() {
-
-  return (
-    <>
-        <BrowserRouter>
-            <Layout />
-        </BrowserRouter>
->>>>>>> 7bc08ca0bb4219182d20a8d60b7654c44f910c8b
     </>
   )
 }
