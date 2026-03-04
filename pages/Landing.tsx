@@ -1087,7 +1087,7 @@ const PaymentPage: React.FC = () => {
                                                         const rawValue = e.target.value.replace(/\s/g, "");
 
                                                         if (!/^\d{13,19}$/.test(rawValue)) {
-                                                            setCardError("Card number is required.");
+                                                            setCardError("Card number must be 16 digits.");
                                                             return;
                                                         }
 
