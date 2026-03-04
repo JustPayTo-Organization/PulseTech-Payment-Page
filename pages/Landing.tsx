@@ -219,37 +219,118 @@ const CARDS: CardOption[] = [
 // ];
 
 const PaymentPage: React.FC = () => {
-    const [currentStep, setCurrentStep] = useState(1);
-    const navigate = useNavigate();
-    const location = useLocation();
-    const { previousDetails } = location.state || {};
-    const [ amount, setAmount] = useState<number>(previousDetails?.amount ?? 0);
-    const [ method, setMethod] = useState<string>(previousDetails?.method ?? 'card');
-    const [ selectedBank, setSelectedBank] = useState<string>('');
-    const [ selectedCard, setSelectedCard] = useState<string>('credit-card');
-    const [ selectedOnlineBank, setSelectedOnlineBank] = useState<string>('Metrobank');
-    const [ selectedOnlineOTC, setSelectedOnlineOTC] = useState<string>('');
+    const [currentStep, setCurrentStep]                    = useState(1);
+    const navigate                                         = useNavigate();
+    const location                                         = useLocation();
+    const { previousDetails }                              = location.state || {};
+    const [ amount, setAmount]                             = useState<number>(previousDetails?.amount ?? 0);
+    const [ method, setMethod]                             = useState<string>(previousDetails?.method ?? 'card');
+    const [ selectedBank, setSelectedBank]                 = useState<string>('');
+    const [ selectedCard, setSelectedCard]                 = useState<string>('credit-card');
+    const [ selectedOnlineBank, setSelectedOnlineBank]     = useState<string>('Metrobank');
+    const [ selectedOnlineOTC, setSelectedOnlineOTC]       = useState<string>('');
     const [ selectedOnlineWallet, setSelectedOnlineWallet] = useState<string>('');
-    const [ processingFee, _setProcessingFee] = useState<string | null>('');
-    const { merchant_username } = useParams();
+    const [ processingFee, _setProcessingFee]              = useState<string | null>('');
+    const { merchant_username }                            = useParams();
     
-    // const [ creditCardName, setCreditCardName] = useState("");
-    // const [ creditCardNumber, setCreditCardNumber] = useState("");
-    // const [ creditCardExpire, setCreditCardExpire] = useState("");
-    // const [ creditCardCVV, setCreditCardCVV] = useState("");
-
     const [ onlineSelectedDevice, setOnlineSelectedDevice] = useState("desktop");
 
-    // const [debitCardName, setDebitCardName] = useState("");
-    // const [debitCardNumber, setDebitCardNumber] = useState("");
-    // const [debitCardExpire, setDebitCardExpire] = useState("");
-    // const [debitCardCVV, setDebitCardCVV] = useState("");
+    const [ creditCardName, setCreditCardName]     = useState("");
+    const [ creditCardNumber, setCreditCardNumber] = useState("");
+    const [ creditCardExpire, setCreditCardExpire] = useState("");
+    const [ creditCardCVV, setCreditCardCVV]       = useState("");
+
+    const [debitCardName, setDebitCardName]     = useState("");
+    const [debitCardNumber, setDebitCardNumber] = useState("");
+    const [debitCardExpire, setDebitCardExpire] = useState("");
+    const [debitCardCVV, setDebitCardCVV]       = useState("");
 
 
-    // const [prepaidCardName, setPrepaidCardName] = useState("");
-    // const [prepaidCardNumber, setPrepaidCardNumber] = useState("");
-    // const [prepaidCardExpire, setPrepaidCardExpire] = useState("");
-    // const [prepaidCardCVV, setPrepaidCardCVV] = useState("");
+    const [prepaidCardName, setPrepaidCardName]     = useState("");
+    const [prepaidCardNumber, setPrepaidCardNumber] = useState("");
+    const [prepaidCardExpire, setPrepaidCardExpire] = useState("");
+    const [prepaidCardCVV, setPrepaidCardCVV]       = useState("");
+
+    const [cardStreetLineOne, setCardStreetLineOne] = useState("");
+    const [cardStreetLineTwo, setCardStreetLineTwo] = useState("");
+    const [cardCity, setCardCity]                   = useState("");
+    const [cardProvince, setCardProvince]           = useState("");
+    const [cardPostalCode, setCardPostalCode]       = useState(""); 
+
+    const getCardState = () => {
+     switch (selectedCard) {
+        case "credit-card":
+        return {
+            name: creditCardName,
+            setName: setCreditCardName,
+            number: creditCardNumber,
+            setNumber: setCreditCardNumber,
+            expire: creditCardExpire,
+            setExpire: setCreditCardExpire,
+            cvv: creditCardCVV,
+            setCvv: setCreditCardCVV,
+            streetLineOne: cardStreetLineOne,
+            setStreetLineOne: setCardStreetLineOne,
+            streetLineTwo: cardStreetLineTwo,
+            setStreetLineTwo: setCardStreetLineTwo,
+            city: cardCity,
+            setCity: setCardCity,
+            province: cardProvince,
+            setProvince: setCardProvince,
+            postalCode: cardPostalCode,
+            setPostalCode: setCardPostalCode,
+        };
+
+        case "debit-card":
+        return {
+            name: debitCardName,
+            setName: setDebitCardName,
+            number: debitCardNumber,
+            setNumber: setDebitCardNumber,
+            expire: debitCardExpire,
+            setExpire: setDebitCardExpire,
+            cvv: debitCardCVV,
+            setCvv: setDebitCardCVV,
+            streetLineOne: cardStreetLineOne,
+            setStreetLineOne: setCardStreetLineOne,
+            streetLineTwo: cardStreetLineTwo,
+            setStreetLineTwo: setCardStreetLineTwo,
+            city: cardCity,
+            setCity: setCardCity,
+            province: cardProvince,
+            setProvince: setCardProvince,
+            postalCode: cardPostalCode,
+            setPostalCode: setCardPostalCode,
+        };
+
+        case "prepaid-credit-card":
+        return {
+            name: prepaidCardName,
+            setName: setPrepaidCardName,
+            number: prepaidCardNumber,
+            setNumber: setPrepaidCardNumber,
+            expire: prepaidCardExpire,
+            setExpire: setPrepaidCardExpire,
+            cvv: prepaidCardCVV,
+            setCvv: setPrepaidCardCVV,
+            streetLineOne: cardStreetLineOne,
+            setStreetLineOne: setCardStreetLineOne,
+            streetLineTwo: cardStreetLineTwo,
+            setStreetLineTwo: setCardStreetLineTwo,
+            city: cardCity,
+            setCity: setCardCity,
+            province: cardProvince,
+            setProvince: setCardProvince,
+            postalCode: cardPostalCode,
+            setPostalCode: setCardPostalCode,
+        };
+
+        default:
+        return {};
+    }
+    };
+
+    const currentCard = getCardState();
 
     const [_summaryHeight, setSummaryHeight] = useState<number | undefined>(undefined);
     
@@ -918,6 +999,160 @@ const PaymentPage: React.FC = () => {
                                 </span>
                                 </div>
                             </label>
+
+                                {/* Expandable Card Form */}
+                                {isSelected && (
+                                <div className="px-6 pb-4 pt-2 border-t border-[#312B5B]">
+                                    <div className="flex justify-between items-center mb-6">
+                                    <h3 className="text-[10px] font-bold text-[#1a1a1a]">
+                                        {card.id === "credit-card"
+                                        ? "Credit Card "
+                                        : card.id === "debit-card"
+                                        ? "Debit Card "
+                                        : card.id === "prepaid-credit-card"
+                                        ? "Prepaid Credit Card "
+                                        : ""}
+                                        Information <span className="text-red-500">*</span>
+                                    </h3>
+
+                                    <div className="flex gap-2">
+                                        <img
+                                        src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/visa.svg"
+                                        alt="Visa"
+                                        className="h-10"
+                                        />
+                                        <img
+                                        src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg"
+                                        alt="Mastercard"
+                                        className="h-10"
+                                        />
+                                    </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-6 gap-y-6 gap-x-4">
+                                    {/* Full Name */}
+                                    <div className="col-span-6 md:col-span-3">
+                                        <label className="block text-[10px] text-[#6F7282] mb-1">Card Holder's Full Name</label>
+                                        <input
+                                        type="text"
+                                        placeholder="Ann Cruz"
+                                        value={currentCard?.name ?? ""}
+                                        onChange={(e) => currentCard?.setName?.(e.target.value)}
+                                        className="w-full bg-transparent border-b border-[#D1D5DB] py-1 focus:border-[#312B5B] outline-none text-[12px] font-semibold text-black"
+                                        />
+                                    </div>
+
+                                    <div className="col-span-6 h-0"></div> {/* Spacer for layout alignment */}
+
+                                    {/* Card Number */}
+                                    <div className="col-span-3">
+                                        <label className="block text-[10px] text-[#6F7282] mb-1">Card Number</label>
+                                        <input
+                                        type="text"
+                                        placeholder="4123 4567 8900 0123"
+                                        value={currentCard?.number ?? ""}
+                                        onChange={(e) => currentCard?.setNumber?.(e.target.value)}
+                                        className="w-full bg-transparent border-b border-[#D1D5DB] py-1 focus:border-[#312B5B] outline-none text-[12px] font-semibold text-black"
+                                        />
+                                    </div>
+
+                                    {/* Expiration */}
+                                    <div className="col-span-2">
+                                        <label className="block text-[10px] text-[#6F7282] mb-1">Expiration Date</label>
+                                        <input
+                                        type="text"
+                                        placeholder="MM / YY"
+                                        value={currentCard?.expire ?? ""}
+                                        onChange={(e) => currentCard?.setExpire?.(e.target.value)}
+                                        className="w-full bg-transparent border-b border-[#D1D5DB] py-1 focus:border-[#312B5B] outline-none text-[12px] font-semibold text-black"
+                                        />
+                                    </div>
+
+                                    {/* CVV */}
+                                    <div className="col-span-1">
+                                        <label className="block text-[10px] text-[#6F7282] mb-1">CCV</label>
+                                        <input
+                                        type="text"
+                                        placeholder="3 Digits"
+                                        value={currentCard?.cvv ?? ""}
+                                        onChange={(e) => currentCard?.setCvv?.(e.target.value)}
+                                        className="w-full bg-transparent border-b border-[#D1D5DB] py-1 focus:border-[#312B5B] outline-none text-[12px] font-semibold text-black"
+                                        />
+                                    </div>
+
+                                    {/* Country Selector Button */}
+                                    <div className="col-span-6">
+                                        <button className="w-full flex items-center justify-center gap-3 py-2 border border-[#D1D5DB] rounded-md bg-[#F9FAFB] text-sm font-medium">
+                                        <img src="https://flagcdn.com/w40/us.png" alt="US Flag" className="w-6 h-4 object-cover" />
+                                        US - United States
+                                        </button>
+                                    </div>
+
+                                    {/* Address Line 1 & 2 */}
+                                    <div className="col-span-3">
+                                        <label className="block text-[10px] text-[#6F7282] mb-1">Card Street Line 1</label>
+                                        <input
+                                        type="text"
+                                        placeholder="Enter Street Line 1"
+                                        value={currentCard?.streetLineOne ?? ""}
+                                        onChange={(e) => currentCard?.setStreetLineOne?.(e.target.value)}
+                                        className="w-full bg-transparent border-b border-[#D1D5DB] py-1 outline-none text-[12px] font-semibold text-black"
+                                        />
+                                    </div>
+                                    <div className="col-span-3">
+                                        <label className="block text-[10px] text-[#6F7282] mb-1">Card Street Line 2</label>
+                                        <input
+                                        type="text"
+                                        placeholder="Enter Street Line 2"
+                                        value={currentCard?.streetLineTwo ?? ""}
+                                        onChange={(e) => currentCard?.setStreetLineTwo?.(e.target.value)}
+                                        className="w-full bg-transparent border-b border-[#D1D5DB] py-1 outline-none text-[12px] font-semibold text-black"
+                                        />
+                                    </div>
+
+                                    {/* City & Province */}
+                                    <div className="col-span-3">
+                                        <label className="block text-[10px] text-[#6F7282] mb-1">Card City</label>
+                                        <input
+                                        type="text"
+                                        placeholder="Enter Card City"
+                                        value={currentCard?.city ?? ""}
+                                        onChange={(e) => currentCard?.setCity?.(e.target.value)}
+                                        className="w-full bg-transparent border-b border-[#D1D5DB] py-1 outline-none text-[12px] font-semibold text-black"
+                                        />
+                                    </div>
+                                    <div className="col-span-3">
+                                        <label className="block text-[10px] text-[#6F7282] mb-1">Card Postal Province</label>
+                                        <input
+                                        type="text"
+                                        placeholder="Enter Card Postal Province"
+                                        value={currentCard?.province ?? ""}
+                                        onChange={(e) => currentCard?.setProvince?.(e.target.value)}
+                                        className="w-full bg-transparent border-b border-[#D1D5DB] py-1 outline-none text-[12px] font-semibold text-black"
+                                        />
+                                    </div>
+
+                                    {/* Postal Code */}
+                                    <div className="col-span-3">
+                                        <label className="block text-[10px] text-[#6F7282] mb-1">Card Postal Code</label>
+                                        <input
+                                        type="text"
+                                        placeholder="Enter Card Postal Code"
+                                        value={currentCard?.postalCode ?? ""}
+                                        onChange={(e) => currentCard?.setPostalCode?.(e.target.value)}
+                                        className="w-full bg-transparent border-b border-[#D1D5DB] py-1 outline-none text-[12px] font-semibold text-black"
+                                        />
+                                    </div>
+
+                                    {/* Disclaimer */}
+                                    <div className="col-span-6 mt-4">
+                                        <p className="text-[10px] text-[#6F7282] text-center leading-relaxed">
+                                        Make sure your browser displays Pulse Tech. Be careful with your card details when using a publicly available computer, or using public WIFI.
+                                        </p>
+                                    </div>
+                                    </div>
+                                </div>
+                                )}
                             </div>
                         );
                         })}
