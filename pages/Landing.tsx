@@ -419,6 +419,7 @@ const PaymentPage: React.FC = () => {
     const [ merchantError, setMerchantError] = useState<string | null>(null);
     const safePaymentMethods = paymentmethods.map(({ icon, ...rest }) => rest);
     const [nameError, setNameError] = useState<string>("");
+    const [cardError, setCardError] = useState<string>("");
     const [expError, setExpError] = useState<string>("");
     const [cvvError, setCvvError] = useState<string>("");
     const [streetOneError, setStreetOneError] = useState<string>("");
@@ -1071,15 +1072,35 @@ const PaymentPage: React.FC = () => {
                                                     type="text"
                                                     placeholder="4123 4567 8900 0123"
                                                     value={currentCard?.number ?? ""}
-                                                    onChange={(e) => {
-                                                        const rawValue = e.target.value.replace(/\D/g, ""); // remove non-digit chars
-                                                        const formatted = rawValue.match(/.{1,4}/g)?.join(" ") ?? "";
-                                                        currentCard?.setNumber?.(formatted);
-                                                    }}
                                                     maxLength={19}
-                                                    className="w-full bg-transparent border-b border-[#D1D5DB] py-0.5 focus:border-[#312B5B] outline-none text-[11px] font-semibold text-black"
+                                                    onChange={(e) => {
+                                                        const rawValue = e.target.value.replace(/\D/g, ""); // digits only
+
+                                                        // format into groups of 4
+                                                        const formatted =
+                                                            rawValue.match(/.{1,4}/g)?.join(" ") ?? "";
+
+                                                        currentCard?.setNumber?.(formatted);
+                                                        setCardError(""); // clear error while typing
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        const rawValue = e.target.value.replace(/\s/g, "");
+
+                                                        if (!/^\d{13,19}$/.test(rawValue)) {
+                                                            setCardError("Card number is required.");
+                                                            return;
+                                                        }
+
+                                                        setCardError("");
+                                                    }}
+                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
+                                                    ${cardError ? "border-red-500" : "border-[#D1D5DB]"}
+                                                    focus:border-[#312B5B]`}
                                                 />
-                                            </div>
+                                                {cardError && (
+                                                    <p className="text-red-500 text-[9px] mt-1">{cardError}</p>
+                                                )}
+                                                </div>
 
                                             {/* Expiration */}
                                             <div className="col-span-2">
