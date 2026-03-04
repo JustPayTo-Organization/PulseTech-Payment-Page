@@ -989,7 +989,7 @@ const PaymentPage: React.FC = () => {
                         return (
                             <div
                             key={card.id}
-                            className={`rounded-md text-xs transition-all duration-300 w-full lg:w-[50%] overflow-hidden ${
+                            className={`rounded-md text-xs transition-all duration-300 w-full lg:w-[70%] overflow-hidden ${
                                 isSelected
                                 ? "border-[#1B2A27] bg-[#F7F8FA] shadow-sm"
                                 : "border-transparent hover:bg-gray-50"
