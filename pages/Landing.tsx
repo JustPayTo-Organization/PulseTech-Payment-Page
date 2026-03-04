@@ -332,6 +332,15 @@ const PaymentPage: React.FC = () => {
 
     const currentCard = getCardState();
 
+    const getCardType = (cardNumber: string): "Visa" | "Mastercard" | "Unknown" => {
+        const cleaned = cardNumber.replace(/\s+/g, ""); // remove spaces
+
+        if (/^4[0-9]{0,15}$/.test(cleaned)) return "Visa";
+        if (/^(5[1-5][0-9]{0,14}|2(2[2-9][0-9]{0,12}|[3-6][0-9]{0,13}|7[01][0-9]{0,12}|720[0-9]{0,12}))$/.test(cleaned)) return "Mastercard";
+
+        return "Unknown";
+    };
+
     const [_summaryHeight, setSummaryHeight] = useState<number | undefined>(undefined);
     
     // const PROCESSING_FEE = 10;
@@ -409,6 +418,15 @@ const PaymentPage: React.FC = () => {
     const [ loadingMerchant, setLoadingMerchant] = useState(false);
     const [ merchantError, setMerchantError] = useState<string | null>(null);
     const safePaymentMethods = paymentmethods.map(({ icon, ...rest }) => rest);
+    const [nameError, setNameError] = useState<string>("");
+    const [expError, setExpError] = useState<string>("");
+    const [cvvError, setCvvError] = useState<string>("");
+    const [streetOneError, setStreetOneError] = useState<string>("");
+    const [streetTwoError, setStreetTwoError] = useState<string>("");
+    const [cityError, setCityError] = useState<string>("");
+    const [provinceError, setProvinceError] = useState<string>("");
+    const [postalError, setPostalError] = useState<string>("");
+
     // UseEffect for fetching payment methods
     useEffect(() => {
         const controller = new AbortController();
@@ -1002,156 +1020,281 @@ const PaymentPage: React.FC = () => {
 
                                 {/* Expandable Card Form */}
                                 {isSelected && (
-                                <div className="px-6 pb-4 pt-2 border-t border-[#312B5B]">
-                                    <div className="flex justify-between items-center mb-6">
-                                    <h3 className="text-[10px] font-bold text-[#1a1a1a]">
-                                        {card.id === "credit-card"
-                                        ? "Credit Card "
-                                        : card.id === "debit-card"
-                                        ? "Debit Card "
-                                        : card.id === "prepaid-credit-card"
-                                        ? "Prepaid Credit Card "
-                                        : ""}
-                                        Information <span className="text-red-500">*</span>
-                                    </h3>
+                                    <div className="px-6 pb-3 pt-2 border-t border-[#312B5B]">
+                                        <div className="flex justify-between items-center mb-3">
+                                            <h3 className="text-[10px] font-bold text-[#1a1a1a]">
+                                                {card.id.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} Information <span className="text-red-500">*</span>
+                                            </h3>
 
-                                    <div className="flex gap-2">
-                                        <img
-                                        src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/visa.svg"
-                                        alt="Visa"
-                                        className="h-10"
-                                        />
-                                        <img
-                                        src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg"
-                                        alt="Mastercard"
-                                        className="h-10"
-                                        />
-                                    </div>
-                                    </div>
+                                            <div className="flex gap-2">
+                                                {currentCard?.number && getCardType(currentCard.number) === "Visa" && (
+                                                    <img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/visa.svg" alt="Visa" className="h-5" />
+                                                )}
+                                                {currentCard?.number && getCardType(currentCard.number) === "Mastercard" && (
+                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-5" />
+                                                )}
+                                            </div>
+                                        </div>
 
-                                    <div className="grid grid-cols-6 gap-y-6 gap-x-4">
-                                    {/* Full Name */}
-                                    <div className="col-span-6 md:col-span-3">
-                                        <label className="block text-[10px] text-[#6F7282] mb-1">Card Holder's Full Name</label>
-                                        <input
-                                        type="text"
-                                        placeholder="Ann Cruz"
-                                        value={currentCard?.name ?? ""}
-                                        onChange={(e) => currentCard?.setName?.(e.target.value)}
-                                        className="w-full bg-transparent border-b border-[#D1D5DB] py-1 focus:border-[#312B5B] outline-none text-[12px] font-semibold text-black"
-                                        />
-                                    </div>
+                                        <div className="grid grid-cols-6 gap-y-3 gap-x-4">
+                                            {/* Full Name */}
+                                            <div className="col-span-3">
+                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Card Holder's Full Name</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Ann Cruz"
+                                                    value={currentCard?.name ?? ""}
+                                                    onChange={(e) => {
+                                                        currentCard?.setName?.(e.target.value);
+                                                        setNameError(""); // clear error while typing
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        const fullName = e.target.value.trim();
+                                                        const isValid = fullName.split(" ").filter(Boolean).length >= 2; // at least 2 words
+                                                        if (!isValid) {
+                                                            setNameError("Please enter your full name (first and last).");
+                                                        }
+                                                    }}
+                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
+                                                    ${nameError ? "border-red-500" : "border-[#D1D5DB]"}
+                                                    focus:border-[#312B5B]`}
+                                                />
+                                                {nameError && <p className="text-red-500 text-[9px] mt-1">{nameError}</p>}
+                                            </div>
 
-                                    <div className="col-span-6 h-0"></div> {/* Spacer for layout alignment */}
+                                            <div className="col-span-3"></div>
 
-                                    {/* Card Number */}
-                                    <div className="col-span-3">
-                                        <label className="block text-[10px] text-[#6F7282] mb-1">Card Number</label>
-                                        <input
-                                        type="text"
-                                        placeholder="4123 4567 8900 0123"
-                                        value={currentCard?.number ?? ""}
-                                        onChange={(e) => currentCard?.setNumber?.(e.target.value)}
-                                        className="w-full bg-transparent border-b border-[#D1D5DB] py-1 focus:border-[#312B5B] outline-none text-[12px] font-semibold text-black"
-                                        />
-                                    </div>
+                                            {/* Card Number */}
+                                            <div className="col-span-3">
+                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Card Number</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="4123 4567 8900 0123"
+                                                    value={currentCard?.number ?? ""}
+                                                    onChange={(e) => {
+                                                        const rawValue = e.target.value.replace(/\D/g, ""); // remove non-digit chars
+                                                        const formatted = rawValue.match(/.{1,4}/g)?.join(" ") ?? "";
+                                                        currentCard?.setNumber?.(formatted);
+                                                    }}
+                                                    maxLength={19}
+                                                    className="w-full bg-transparent border-b border-[#D1D5DB] py-0.5 focus:border-[#312B5B] outline-none text-[11px] font-semibold text-black"
+                                                />
+                                            </div>
 
-                                    {/* Expiration */}
-                                    <div className="col-span-2">
-                                        <label className="block text-[10px] text-[#6F7282] mb-1">Expiration Date</label>
-                                        <input
-                                        type="text"
-                                        placeholder="MM / YY"
-                                        value={currentCard?.expire ?? ""}
-                                        onChange={(e) => currentCard?.setExpire?.(e.target.value)}
-                                        className="w-full bg-transparent border-b border-[#D1D5DB] py-1 focus:border-[#312B5B] outline-none text-[12px] font-semibold text-black"
-                                        />
-                                    </div>
+                                            {/* Expiration */}
+                                            <div className="col-span-2">
+                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Expiration Date</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="MM / YY"
+                                                    value={currentCard?.expire ?? ""}
+                                                    onChange={(e) => {
+                                                        let value = e.target.value.replace(/\D/g, ""); // remove non-digits
+                                                        if (value.length > 4) value = value.slice(0, 4); // limit to 4 digits MMYY
 
-                                    {/* CVV */}
-                                    <div className="col-span-1">
-                                        <label className="block text-[10px] text-[#6F7282] mb-1">CCV</label>
-                                        <input
-                                        type="text"
-                                        placeholder="3 Digits"
-                                        value={currentCard?.cvv ?? ""}
-                                        onChange={(e) => currentCard?.setCvv?.(e.target.value)}
-                                        className="w-full bg-transparent border-b border-[#D1D5DB] py-1 focus:border-[#312B5B] outline-none text-[12px] font-semibold text-black"
-                                        />
-                                    </div>
+                                                        // auto-insert " / " after the first two digits
+                                                        let formatted = value;
+                                                        if (value.length > 2) {
+                                                            formatted = value.slice(0, 2) + " / " + value.slice(2);
+                                                        }
 
-                                    {/* Country Selector Button */}
-                                    <div className="col-span-6">
-                                        <button className="w-full flex items-center justify-center gap-3 py-2 border border-[#D1D5DB] rounded-md bg-[#F9FAFB] text-sm font-medium">
-                                        <img src="https://flagcdn.com/w40/us.png" alt="US Flag" className="w-6 h-4 object-cover" />
-                                        US - United States
-                                        </button>
-                                    </div>
+                                                        currentCard?.setExpire?.(formatted);
+                                                        setExpError(""); // clear error while typing
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        const value = e.target.value.trim();
+                                                        const [monthStr, yearStr] = value.split("/").map(s => s.trim());
+                                                        const month = parseInt(monthStr, 10);
+                                                        const year = parseInt(yearStr, 10);
 
-                                    {/* Address Line 1 & 2 */}
-                                    <div className="col-span-3">
-                                        <label className="block text-[10px] text-[#6F7282] mb-1">Card Street Line 1</label>
-                                        <input
-                                        type="text"
-                                        placeholder="Enter Street Line 1"
-                                        value={currentCard?.streetLineOne ?? ""}
-                                        onChange={(e) => currentCard?.setStreetLineOne?.(e.target.value)}
-                                        className="w-full bg-transparent border-b border-[#D1D5DB] py-1 outline-none text-[12px] font-semibold text-black"
-                                        />
-                                    </div>
-                                    <div className="col-span-3">
-                                        <label className="block text-[10px] text-[#6F7282] mb-1">Card Street Line 2</label>
-                                        <input
-                                        type="text"
-                                        placeholder="Enter Street Line 2"
-                                        value={currentCard?.streetLineTwo ?? ""}
-                                        onChange={(e) => currentCard?.setStreetLineTwo?.(e.target.value)}
-                                        className="w-full bg-transparent border-b border-[#D1D5DB] py-1 outline-none text-[12px] font-semibold text-black"
-                                        />
-                                    </div>
+                                                        const now = new Date();
+                                                        const currentYear = now.getFullYear() % 100; // YY
+                                                        const currentMonth = now.getMonth() + 1; // 1–12
 
-                                    {/* City & Province */}
-                                    <div className="col-span-3">
-                                        <label className="block text-[10px] text-[#6F7282] mb-1">Card City</label>
-                                        <input
-                                        type="text"
-                                        placeholder="Enter Card City"
-                                        value={currentCard?.city ?? ""}
-                                        onChange={(e) => currentCard?.setCity?.(e.target.value)}
-                                        className="w-full bg-transparent border-b border-[#D1D5DB] py-1 outline-none text-[12px] font-semibold text-black"
-                                        />
-                                    </div>
-                                    <div className="col-span-3">
-                                        <label className="block text-[10px] text-[#6F7282] mb-1">Card Postal Province</label>
-                                        <input
-                                        type="text"
-                                        placeholder="Enter Card Postal Province"
-                                        value={currentCard?.province ?? ""}
-                                        onChange={(e) => currentCard?.setProvince?.(e.target.value)}
-                                        className="w-full bg-transparent border-b border-[#D1D5DB] py-1 outline-none text-[12px] font-semibold text-black"
-                                        />
-                                    </div>
+                                                        if (
+                                                            !/^\d{2}\s?\/\s?\d{2}$/.test(value) || // format MM/YY
+                                                            month < 1 ||
+                                                            month > 12 ||
+                                                            year < currentYear ||
+                                                            (year === currentYear && month < currentMonth)
+                                                        ) {
+                                                            setExpError("Please enter a valid, non-expired date (MM / YY).");
+                                                        }
+                                                    }}
+                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
+                                                    ${expError ? "border-red-500" : "border-[#D1D5DB]"}
+                                                    focus:border-[#312B5B]`}
+                                                />
+                                                {expError && <p className="text-red-500 text-[9px] mt-1">{expError}</p>}
+                                            </div>
 
-                                    {/* Postal Code */}
-                                    <div className="col-span-3">
-                                        <label className="block text-[10px] text-[#6F7282] mb-1">Card Postal Code</label>
-                                        <input
-                                        type="text"
-                                        placeholder="Enter Card Postal Code"
-                                        value={currentCard?.postalCode ?? ""}
-                                        onChange={(e) => currentCard?.setPostalCode?.(e.target.value)}
-                                        className="w-full bg-transparent border-b border-[#D1D5DB] py-1 outline-none text-[12px] font-semibold text-black"
-                                        />
-                                    </div>
+                                            {/* CVV */}
+                                            <div className="col-span-1">
+                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">CCV</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="3 Digits"
+                                                    value={currentCard?.cvv ?? ""}
+                                                    maxLength={3}
+                                                    onChange={(e) => {
+                                                    // Remove non-digits
+                                                    const digitsOnly = e.target.value.replace(/\D/g, "");
+                                                    currentCard?.setCvv?.(digitsOnly);
+                                                    setCvvError(""); // clear error while typing
+                                                    }}
+                                                    onBlur={(e) => {
+                                                    if (!/^\d{3}$/.test(e.target.value)) {
+                                                        setCvvError("CCV must be 3 digits.");
+                                                    }
+                                                    }}
+                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
+                                                    ${cvvError ? "border-red-500" : "border-[#D1D5DB]"}
+                                                    focus:border-[#312B5B]`}
+                                                />
+                                                {cvvError && <p className="text-red-500 text-[9px] mt-1">{cvvError}</p>}
+                                            </div>
 
-                                    {/* Disclaimer */}
-                                    <div className="col-span-6 mt-4">
-                                        <p className="text-[10px] text-[#6F7282] text-center leading-relaxed">
-                                        Make sure your browser displays Pulse Tech. Be careful with your card details when using a publicly available computer, or using public WIFI.
-                                        </p>
+                                            {/* Country Selector Button*/}
+                                            <div className="col-span-6 py-1">
+                                                <button className="w-full flex items-center justify-center gap-2 py-1 border border-[#D1D5DB] rounded bg-[#F9FAFB] text-[11px] font-medium text-gray-700">
+                                                    <img src="https://flagcdn.com/w20/us.png" alt="US Flag" className="w-4 h-auto" />
+                                                    US - United States
+                                                </button>
+                                            </div>
+
+                                            {/* Address Street Line 1 */}
+                                            <div className="col-span-3">
+                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Card Street Line 1</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Enter Street Line 1"
+                                                    value={currentCard?.streetLineOne ?? ""}
+                                                    onChange={(e) => {
+                                                        currentCard?.setStreetLineOne?.(e.target.value);
+                                                        setStreetOneError(""); // clear error while typing
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        if (!e.target.value.trim()) {
+                                                            setStreetOneError("Street address is required.");
+                                                        }
+                                                    }}
+                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
+                                                    ${streetOneError ? "border-red-500" : "border-[#D1D5DB]"}
+                                                    focus:border-[#312B5B]`}
+                                                />
+                                                {streetOneError && <p className="text-red-500 text-[9px] mt-1">{streetOneError}</p>}
+                                            </div>
+                                            {/* Address Street Line 2 */}
+                                            <div className="col-span-3">
+                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Card Street Line 2</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Enter Street Line 2"
+                                                    value={currentCard?.streetLineTwo ?? ""}
+                                                    onChange={(e) => currentCard?.setStreetLineTwo?.(e.target.value)}
+                                                    onBlur={(e) => {
+                                                        if (!e.target.value.trim()) {
+                                                            setStreetTwoError("Street address is required.");
+                                                        }
+                                                    }}
+                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
+                                                    ${streetTwoError ? "border-red-500" : "border-[#D1D5DB]"}
+                                                    focus:border-[#312B5B]`}
+                                                />
+                                                {streetTwoError && <p className="text-red-500 text-[9px] mt-1">{streetTwoError}</p>}
+                                            </div>
+                                            {/* Card City */}
+                                            <div className="col-span-3">
+                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Card City</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Enter Card City"
+                                                    value={currentCard?.city ?? ""}
+                                                    onChange={(e) => {
+                                                        currentCard?.setCity?.(e.target.value);
+                                                        setCityError(""); // clear error while typing
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        const value = e.target.value.trim();
+                                                        // Required & only letters/spaces
+                                                        if (!value) {
+                                                            setCityError("City is required.");
+                                                        } else if (!/^[a-zA-Z\s]+$/.test(value)) {
+                                                            setCityError("City can only contain letters and spaces.");
+                                                        } else {
+                                                            setCityError("");
+                                                        }
+                                                    }}
+                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
+                                                    ${cityError ? "border-red-500" : "border-[#D1D5DB]"}
+                                                    focus:border-[#312B5B]`}
+                                                />
+                                                {cityError && <p className="text-red-500 text-[9px] mt-1">{cityError}</p>}
+                                            </div>
+
+                                            {/* Card Postal Province */}
+                                            <div className="col-span-3">
+                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Card Postal Province</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Enter Card Postal Province"
+                                                    value={currentCard?.province ?? ""}
+                                                    onChange={(e) => {
+                                                        currentCard?.setProvince?.(e.target.value);
+                                                        setProvinceError(""); // clear error while typing
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        const value = e.target.value.trim();
+                                                        // Required & only letters/spaces
+                                                        if (!value) {
+                                                            setProvinceError("Province is required.");
+                                                        } else if (!/^[a-zA-Z\s]+$/.test(value)) {
+                                                            setProvinceError("Province can only contain letters and spaces.");
+                                                        } else {
+                                                            setProvinceError("");
+                                                        }
+                                                    }}
+                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
+                                                    ${provinceError ? "border-red-500" : "border-[#D1D5DB]"}
+                                                    focus:border-[#312B5B]`}
+                                                />
+                                                {provinceError && <p className="text-red-500 text-[9px] mt-1">{provinceError}</p>}
+                                            </div>
+
+                                            <div className="col-span-3">
+                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Card Postal Code</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Enter Card Postal Code"
+                                                    value={currentCard?.postalCode ?? ""}
+                                                    onChange={(e) => {
+                                                        currentCard?.setPostalCode?.(e.target.value);
+                                                        setPostalError(""); // clear error while typing
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        const value = e.target.value.trim();
+                                                        if (!value) {
+                                                            setPostalError("Postal code is required.");
+                                                        } else if (!/^\d{4,6}$/.test(value)) {
+                                                            setPostalError("Postal code must be 4 to 6 digits.");
+                                                        } else {
+                                                            setPostalError("");
+                                                        }
+                                                    }}
+                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
+                                                    ${postalError ? "border-red-500" : "border-[#D1D5DB]"}
+                                                    focus:border-[#312B5B]`}
+                                                />
+                                                {postalError && <p className="text-red-500 text-[9px] mt-1">{postalError}</p>}
+                                            </div>
+
+                                            <div className="col-span-6 mt-2">
+                                                <p className="text-[9px] text-[#6F7282] text-center leading-tight opacity-80">
+                                                    Make sure your browser displays Pulse Tech. Be careful with your card details when using a publicly available computer, or using public WIFI.
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
-                                    </div>
-                                </div>
                                 )}
                             </div>
                         );
