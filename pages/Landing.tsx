@@ -989,7 +989,7 @@ const PaymentPage: React.FC = () => {
                         return (
                             <div
                             key={card.id}
-                            className={`rounded-md text-xs transition-all duration-300 w-full lg:w-[98%] mx-auto overflow-hidden ${
+                            className={`rounded-md text-xs transition-all duration-300 w-full lg:w-[50%] overflow-hidden ${
                                 isSelected
                                 ? "border-[#1B2A27] bg-[#F7F8FA] shadow-sm"
                                 : "border-transparent hover:bg-gray-50"
@@ -1043,7 +1043,7 @@ const PaymentPage: React.FC = () => {
                                                 <label className="block text-[9px] text-[#6F7282] mb-0.5">Card Holder's Full Name</label>
                                                 <input
                                                     type="text"
-                                                    placeholder="Ann Cruz"
+                                                    placeholder="Cardo Dalisay"
                                                     value={currentCard?.name ?? ""}
                                                     onChange={(e) => {
                                                         currentCard?.setName?.(e.target.value);
