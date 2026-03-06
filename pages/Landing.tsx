@@ -90,6 +90,31 @@ type paymentResponse = {
     redirect_url  : string | null;
 }
 
+type Country = {
+    name       : string;
+    code       : string;
+    created_at : string | null;
+    currency   : string;
+    description: string;
+    id         : number;
+    logo_url   : string;
+    mobile_code: string;
+    nationality: string;
+    status     : string;
+    updated_at : string;
+}
+
+type countryCode = {
+    status      : string;
+    status_code : number;
+    title       : string;
+    subtitle   ?: string;
+    option     ?: {
+        searchable: boolean;
+    };
+    data: Country[];
+}
+
 const PRESET_AMOUNTS = [100, 500, 1000, 2500, 5000, 10000];
 
 const PAYMENT_METHODS: PaymentMethod[] = [
@@ -251,11 +276,16 @@ const PaymentPage: React.FC = () => {
     const [prepaidCardExpire, setPrepaidCardExpire] = useState("");
     const [prepaidCardCVV, setPrepaidCardCVV]       = useState("");
 
+    const [email, setEmail]                         = useState("");
+    const [mobile, setMobile]                       = useState("");
     const [cardStreetLineOne, setCardStreetLineOne] = useState("");
     const [cardStreetLineTwo, setCardStreetLineTwo] = useState("");
     const [cardCity, setCardCity]                   = useState("");
     const [cardProvince, setCardProvince]           = useState("");
     const [cardPostalCode, setCardPostalCode]       = useState(""); 
+
+    const [countries, setCountries] = useState<Country[]>([]);
+    const [mobileCode, setMobileCode] = useState("");
 
     const getCardState = () => {
      switch (selectedCard) {
@@ -265,6 +295,10 @@ const PaymentPage: React.FC = () => {
             setName: setCreditCardName,
             number: creditCardNumber,
             setNumber: setCreditCardNumber,
+            email: email,
+            setEmail: setEmail,
+            mobile: mobile,
+            setMobile: setMobile,
             expire: creditCardExpire,
             setExpire: setCreditCardExpire,
             cvv: creditCardCVV,
@@ -287,6 +321,10 @@ const PaymentPage: React.FC = () => {
             setName: setDebitCardName,
             number: debitCardNumber,
             setNumber: setDebitCardNumber,
+            email: email,
+            setEmail: setEmail,
+            mobile: mobile,
+            setMobile: setMobile,
             expire: debitCardExpire,
             setExpire: setDebitCardExpire,
             cvv: debitCardCVV,
@@ -309,6 +347,10 @@ const PaymentPage: React.FC = () => {
             setName: setPrepaidCardName,
             number: prepaidCardNumber,
             setNumber: setPrepaidCardNumber,
+            email: email,
+            setEmail: setEmail,
+            mobile: mobile,
+            setMobile: setMobile,
             expire: prepaidCardExpire,
             setExpire: setPrepaidCardExpire,
             cvv: prepaidCardCVV,
@@ -357,6 +399,7 @@ const PaymentPage: React.FC = () => {
     const username            = merchant_username;
     const payment_methods_url = import.meta.env.VITE_PAYMENT_METHODS_URL;
     const merchant_name_url   = import.meta.env.VITE_MERCHANT_URL;
+    const core_base_url       = import.meta.env.VITE_CORE_BASE_URL;
 
     const handleAmountChange = (val: string) => {
         const num = parseInt(val.replace(/\D/g, '')) || 0;
@@ -420,6 +463,8 @@ const PaymentPage: React.FC = () => {
     const safePaymentMethods = paymentmethods.map(({ icon, ...rest }) => rest);
     const [nameError, setNameError] = useState<string>("");
     const [cardError, setCardError] = useState<string>("");
+    const [emailError, setEmailError] = useState<string>("");
+    const [mobileError, setMobileError] = useState<string>("");
     const [expError, setExpError] = useState<string>("");
     const [cvvError, setCvvError] = useState<string>("");
     const [streetOneError, setStreetOneError] = useState<string>("");
@@ -851,6 +896,36 @@ const PaymentPage: React.FC = () => {
 
     // }, [selectedBank, selectedOnlineBank, selectedOnlineOTC, selectedOnlineWallet, method]);
 
+    // UseEffect for fetching the country codes
+    
+    useEffect(() => {
+
+        if (method !== "card") return;
+
+        fetch(`${core_base_url}/frontend/api/v3/enduser/get/country`, {
+            method: "GET",
+        })
+            .then((response) => {
+                console.log("Country Code fetch response:", response);
+                return response.json();
+            })
+            .then((data: countryCode) => {
+                const countryList = data.data;
+
+                setCountries(countryList);
+
+                // set PH as default
+                const defaultCountry = countryList.find(c => c.code === "PH");
+                if (defaultCountry) {
+                    setMobileCode(defaultCountry.mobile_code);
+                }
+            })
+            .catch((err) => {
+                console.error("Failed to load country codes:", err);
+            });
+    }, [method]);
+
+
     return (
     <>
         {loadingMerchant && (
@@ -1043,7 +1118,7 @@ const PaymentPage: React.FC = () => {
                                                 <label className="block text-[9px] text-[#6F7282] mb-0.5">Card Holder's Full Name</label>
                                                 <input
                                                     type="text"
-                                                    placeholder="Cardo Dalisay"
+                                                    placeholder="Ann Cruz"
                                                     value={currentCard?.name ?? ""}
                                                     onChange={(e) => {
                                                         currentCard?.setName?.(e.target.value);
@@ -1174,6 +1249,78 @@ const PaymentPage: React.FC = () => {
                                                 />
                                                 {cvvError && <p className="text-red-500 text-[9px] mt-1">{cvvError}</p>}
                                             </div>
+                                            
+                                            {/* Email */}
+                                            <div className="col-span-3">
+                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Email Address</label>
+                                                <input
+                                                    type="email"
+                                                    placeholder="anncruz@email.com"
+                                                    value={currentCard?.email ?? ""}
+                                                    onChange={(e) => {
+                                                        currentCard?.setEmail?.(e.target.value);
+                                                        setEmailError("");
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        const value = e.target.value.trim();
+                                                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                                                        if (!emailRegex.test(value)) {
+                                                            setEmailError("Please enter a valid email address.");
+                                                        }
+                                                    }}
+                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
+                                                    ${emailError ? "border-red-500" : "border-[#D1D5DB]"}
+                                                    focus:border-[#312B5B]`}
+                                                />
+                                                {emailError && <p className="text-red-500 text-[9px] mt-1">{emailError}</p>}
+                                            </div>
+
+                                            {/* Mobile */}
+                                            <div className="col-span-3">
+                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Mobile Number</label>
+
+                                                <div className="flex gap-2">
+                                                    {/* Country Code Select */}
+                                                    <select
+                                                        value={mobileCode}
+                                                        onChange={(e) => setMobileCode(e.target.value)}
+                                                        className="max-w-[50px] bg-transparent border-b border-[#D1D5DB] outline-none text-[11px] font-semibold text-black focus:border-[#312B5B]"
+                                                    >
+                                                        {countries.map((country) => (
+                                                            <option
+                                                                key={country.code}
+                                                                value={country.mobile_code}
+                                                            >
+                                                                ({country.mobile_code}) {country.currency || country.name}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+
+                                                    <input
+                                                        type="text"
+                                                        placeholder="9123456789"
+                                                        value={currentCard?.mobile ?? ""}
+                                                        onChange={(e) => {
+                                                            const digits = e.target.value.replace(/\D/g, "");
+                                                            currentCard?.setMobile?.(digits);
+                                                            setMobileError("");
+                                                        }}
+                                                        onBlur={(e) => {
+                                                            const value = e.target.value;
+                                                            if (!/^\d{7,15}$/.test(value)) {
+                                                                setMobileError("Mobile number is required");
+                                                            }
+                                                        }}
+                                                        className={`flex-1 max-w-[90px] md:max-w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
+                                                        ${mobileError ? "border-red-500" : "border-[#D1D5DB]"}
+                                                        focus:border-[#312B5B]`}
+                                                    />
+                                                </div>
+
+                                                {mobileError && (
+                                                    <p className="text-red-500 text-[9px] mt-1">{mobileError}</p>
+                                                )}
+                                            </div>
 
                                             {/* Country Selector Button*/}
                                             <div className="col-span-6 py-1">
@@ -1182,7 +1329,7 @@ const PaymentPage: React.FC = () => {
                                                     US - United States
                                                 </button>
                                             </div>
-
+                                            
                                             {/* Address Street Line 1 */}
                                             <div className="col-span-3">
                                                 <label className="block text-[9px] text-[#6F7282] mb-0.5">Card Street Line 1</label>
