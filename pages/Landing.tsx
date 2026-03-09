@@ -490,6 +490,7 @@ const PaymentPage: React.FC = () => {
     const [ loadingMerchant, setLoadingMerchant] = useState(false);
     const [ merchantError, setMerchantError] = useState<string | null>(null);
     const safePaymentMethods = paymentmethods.map(({ icon, ...rest }) => rest);
+    const [isCvvMasked, setIsCvvMasked] = useState(false);
     const [nameError, setNameError] = useState<string>("");
     const [cardError, setCardError] = useState<string>("");
     const [emailError, setEmailError] = useState<string>("");
@@ -1324,7 +1325,7 @@ const PaymentPage: React.FC = () => {
                                             <div className="col-span-1">
                                                 <label className="block text-[9px] text-[#6F7282] mb-0.5">CCV</label>
                                                 <input
-                                                    type="text"
+                                                    type={isCvvMasked ? "password" : "text"}
                                                     placeholder="3 Digits"
                                                     value={currentCard?.cvv ?? ""}
                                                     maxLength={3}
@@ -1338,7 +1339,9 @@ const PaymentPage: React.FC = () => {
                                                     if (!/^\d{3}$/.test(e.target.value)) {
                                                         setCvvError("CCV must be 3 digits.");
                                                     }
+                                                    setIsCvvMasked(true);
                                                     }}
+                                                    onFocus={() => setIsCvvMasked(false)}
                                                     className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
                                                     ${cvvError ? "border-red-500" : "border-[#D1D5DB]"}
                                                     focus:border-[#312B5B]`}
