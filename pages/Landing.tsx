@@ -1323,7 +1323,7 @@ const PaymentPage: React.FC = () => {
 
                                             {/* CVV */}
                                             <div className="col-span-1">
-                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">CCV</label>
+                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">CVV</label>
                                                 <input
                                                     type={isCvvMasked ? "password" : "text"}
                                                     placeholder="3 Digits"
@@ -1337,7 +1337,7 @@ const PaymentPage: React.FC = () => {
                                                     }}
                                                     onBlur={(e) => {
                                                     if (!/^\d{3}$/.test(e.target.value)) {
-                                                        setCvvError("CCV must be 3 digits.");
+                                                        setCvvError("CVV must be 3 digits.");
                                                     }
                                                     setIsCvvMasked(true);
                                                     }}
