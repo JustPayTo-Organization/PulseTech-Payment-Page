@@ -115,6 +115,32 @@ type countryCode = {
     data: Country[];
 }
 
+type BINCheck = {
+    country           : string;
+    "country-code"    : string;
+    "card-brand"      : string;
+    "ip-city"         : string;
+    "ip-blocklists"   : [];
+    "ip-country-code3": string;
+    "is-commercial"   : boolean;
+    "is-reloadable"   : boolean;
+    "ip-country"      : string;
+    "bin-number"      : string;
+    issuer            : string;
+    "issuer-website"  : string;
+    "ip-region"       : string;
+    valid             : boolean,
+    "card-type"       : string;
+    "is-prepaid"      : boolean;
+    "ip-blocklisted"  : boolean;
+    "card-category"   : string;
+    "issuer-phone"    : string;
+    "currency-code"   : string;
+    "ip-matches-bin"  : boolean;
+    "country-code3"   : string;
+    "ip-country-code" : string;
+}
+
 const PRESET_AMOUNTS = [100, 500, 1000, 2500, 5000, 10000];
 
 const PAYMENT_METHODS: PaymentMethod[] = [
@@ -149,7 +175,7 @@ const CARDS: CardOption[] = [
     description: 'Use any debit card with a Visa or Mastercard Logo',
   },
   {
-    id: 'prepaid-credit-card',
+    id: 'prepaid-debit-card',
     name: 'Prepaid Credit Card',
     logo: Wallet,
     description: 'Use any prepaid card with a Visa or Mastercard Logo (Amore, Yazz, EON, etc.)',
@@ -286,6 +312,7 @@ const PaymentPage: React.FC = () => {
 
     const [countries, setCountries] = useState<Country[]>([]);
     const [mobileCode, setMobileCode] = useState("");
+    const [cardType, setCardType] = useState("");
 
     const getCardState = () => {
      switch (selectedCard) {
@@ -313,6 +340,8 @@ const PaymentPage: React.FC = () => {
             setProvince: setCardProvince,
             postalCode: cardPostalCode,
             setPostalCode: setCardPostalCode,
+            cardType: cardType,
+            setCardType: setCardType,
         };
 
         case "debit-card":
@@ -341,7 +370,7 @@ const PaymentPage: React.FC = () => {
             setPostalCode: setCardPostalCode,
         };
 
-        case "prepaid-credit-card":
+        case "prepaid-debit-card":
         return {
             name: prepaidCardName,
             setName: setPrepaidCardName,
@@ -925,6 +954,34 @@ const PaymentPage: React.FC = () => {
             });
     }, [method]);
 
+    // BIN Checker
+    async function checkBin(cardNumber: string) {
+        try {
+            const response = await fetch(`${api_base_url}/payment-page/bin-lookup?card_number=${cardNumber}`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+            });
+
+            if (!response.ok) throw new Error("Failed to check BIN");
+
+            const data: BINCheck = await response.json();
+
+            let finalCardType: string
+
+            if (data["card-type"] === "CREDIT"){
+                finalCardType = "credit_card";
+            }else if (data["card-type"] === "DEBIT"){
+                finalCardType = data["is-prepaid"] ? "prepaid_card" : "debit_card";
+            }else {
+                finalCardType = "NoCardTypeReceived"
+            }
+
+            return finalCardType;
+        } catch (err) {
+            console.error("BIN check error:", err);
+            return null; // or throw if you want to handle errors in onBlur
+        }
+    }
 
     return (
     <>
@@ -1158,7 +1215,7 @@ const PaymentPage: React.FC = () => {
                                                         currentCard?.setNumber?.(formatted);
                                                         setCardError(""); // clear error while typing
                                                     }}
-                                                    onBlur={(e) => {
+                                                    onBlur={async (e) => {
                                                         const rawValue = e.target.value.replace(/\s/g, "");
 
                                                         if (!/^\d{13,19}$/.test(rawValue)) {
@@ -1167,6 +1224,45 @@ const PaymentPage: React.FC = () => {
                                                         }
 
                                                         setCardError("");
+
+                                                         try {
+                                                            // BIN Checker returns normalized string, not BINCheck
+                                                            const binCardType: string | null = await checkBin(rawValue);
+
+                                                            if (!binCardType || binCardType === "NoCardTypeReceived") {
+                                                            setCardError("Unable to verify card type.");
+                                                            return;
+                                                            }
+
+                                                            // Map selectedCard to normalized cardType
+                                                            let expectedCardType: string;
+                                                            switch (selectedCard) {
+                                                                case "credit-card":
+                                                                    expectedCardType = "credit_card";
+                                                                    break;
+                                                                case "debit-card":
+                                                                    expectedCardType = "debit_card";
+                                                                    break;
+                                                                case "prepaid-debit-card":
+                                                                    expectedCardType = "prepaid_card";
+                                                                    break;
+                                                                default:
+                                                                    expectedCardType = "";
+                                                            }
+
+                                                            // Compare BIN result with expected
+                                                            if (binCardType !== expectedCardType) {
+                                                                setCardError(`Selected card type (${selectedCard}) does not match detected card type (${binCardType}).`);
+                                                                return;
+                                                            }
+
+                                                            currentCard?.setCardType?.(expectedCardType);
+                                                            console.log("BIN Checker detected card type:", expectedCardType);
+
+                                                        } catch (err) {
+                                                            console.error(err);
+                                                            setCardError("Unable to verify card type.");
+                                                        }
                                                     }}
                                                     className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
                                                     ${cardError ? "border-red-500" : "border-[#D1D5DB]"}
@@ -1175,7 +1271,7 @@ const PaymentPage: React.FC = () => {
                                                 {cardError && (
                                                     <p className="text-red-500 text-[9px] mt-1">{cardError}</p>
                                                 )}
-                                                </div>
+                                            </div>
 
                                             {/* Expiration */}
                                             <div className="col-span-2">
@@ -1288,7 +1384,7 @@ const PaymentPage: React.FC = () => {
                                                     >
                                                         {countries.map((country) => (
                                                             <option
-                                                                key={country.code}
+                                                                key={country.id}
                                                                 value={country.mobile_code}
                                                             >
                                                                 ({country.mobile_code}) {country.currency || country.name}
