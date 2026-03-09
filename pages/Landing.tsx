@@ -936,7 +936,7 @@ const PaymentPage: React.FC = () => {
             method: "GET",
         })
             .then((response) => {
-                console.log("Country Code fetch response:", response);
+                // console.log("Country Code fetch response:", response);
                 return response.json();
             })
             .then((data: countryCode) => {
@@ -1258,7 +1258,7 @@ const PaymentPage: React.FC = () => {
                                                             }
 
                                                             currentCard?.setCardType?.(expectedCardType);
-                                                            console.log("BIN Checker detected card type:", expectedCardType);
+                                                            // console.log("BIN Checker detected card type:", expectedCardType);
 
                                                         } catch (err) {
                                                             console.error(err);
