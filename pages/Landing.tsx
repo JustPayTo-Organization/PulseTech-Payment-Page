@@ -1234,7 +1234,7 @@ const PaymentPage: React.FC = () => {
                                                             return;
                                                             }
 
-                                                            // Map selectedCard to normalized cardType
+                                                            // Map selectedCard to normalized binCardType
                                                             let expectedCardType: string;
                                                             switch (selectedCard) {
                                                                 case "credit-card":
