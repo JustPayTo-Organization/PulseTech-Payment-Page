@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { 
   CreditCard, Building2, Globe, Store, Wallet, QrCode, 
-  Facebook, Instagram, Link2, Banknote,
+//   Facebook, Instagram, Link2, 
+  Banknote,
   type LucideIcon,
   Monitor, 
 //   Landmark, 
@@ -10,8 +11,9 @@ import {
   Smartphone
 } from 'lucide-react';
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, useLocation} from "react-router-dom";
 // import generateReference from '../components/reference_generator/reference_generator';
+import Stepper from "../components/stepper/Stepper";
 
 // --- Types & Interfaces ---
 interface PaymentMethod {
@@ -88,6 +90,57 @@ type paymentResponse = {
     redirect_url  : string | null;
 }
 
+type Country = {
+    name       : string;
+    code       : string;
+    created_at : string | null;
+    currency   : string;
+    description: string;
+    id         : number;
+    logo_url   : string;
+    mobile_code: string;
+    nationality: string;
+    status     : string;
+    updated_at : string;
+}
+
+type countryCode = {
+    status      : string;
+    status_code : number;
+    title       : string;
+    subtitle   ?: string;
+    option     ?: {
+        searchable: boolean;
+    };
+    data: Country[];
+}
+
+type BINCheck = {
+    country           : string;
+    "country-code"    : string;
+    "card-brand"      : string;
+    "ip-city"         : string;
+    "ip-blocklists"   : [];
+    "ip-country-code3": string;
+    "is-commercial"   : boolean;
+    "is-reloadable"   : boolean;
+    "ip-country"      : string;
+    "bin-number"      : string;
+    issuer            : string;
+    "issuer-website"  : string;
+    "ip-region"       : string;
+    valid             : boolean,
+    "card-type"       : string;
+    "is-prepaid"      : boolean;
+    "ip-blocklisted"  : boolean;
+    "card-category"   : string;
+    "issuer-phone"    : string;
+    "currency-code"   : string;
+    "ip-matches-bin"  : boolean;
+    "country-code3"   : string;
+    "ip-country-code" : string;
+}
+
 const PRESET_AMOUNTS = [100, 500, 1000, 2500, 5000, 10000];
 
 const PAYMENT_METHODS: PaymentMethod[] = [
@@ -122,7 +175,7 @@ const CARDS: CardOption[] = [
     description: 'Use any debit card with a Visa or Mastercard Logo',
   },
   {
-    id: 'prepaid-credit-card',
+    id: 'prepaid-debit-card',
     name: 'Prepaid Credit Card',
     logo: Wallet,
     description: 'Use any prepaid card with a Visa or Mastercard Logo (Amore, Yazz, EON, etc.)',
@@ -217,49 +270,165 @@ const CARDS: CardOption[] = [
 // ];
 
 const PaymentPage: React.FC = () => {
-
-    const navigate = useNavigate();
-    const [ amount, setAmount] = useState<number>(0);
-    const [ method, setMethod] = useState<string>('card');
-    const [ selectedBank, setSelectedBank] = useState<string>('');
-    const [ selectedCard, setSelectedCard] = useState<string>('credit-card');
-    const [ selectedOnlineBank, setSelectedOnlineBank] = useState<string>('');
-    const [ selectedOnlineOTC, setSelectedOnlineOTC] = useState<string>('');
+    const [currentStep, setCurrentStep]                    = useState(1);
+    const navigate                                         = useNavigate();
+    const location                                         = useLocation();
+    const { previousDetails }                              = location.state || {};
+    const [ amount, setAmount]                             = useState<number>(previousDetails?.amount ?? 0);
+    const [ method, setMethod]                             = useState<string>(previousDetails?.method ?? 'card');
+    const [ selectedBank, setSelectedBank]                 = useState<string>('');
+    const [ selectedCard, setSelectedCard]                 = useState<string>('credit-card');
+    const [ selectedOnlineBank, setSelectedOnlineBank]     = useState<string>('Metrobank');
+    const [ selectedOnlineOTC, setSelectedOnlineOTC]       = useState<string>('');
     const [ selectedOnlineWallet, setSelectedOnlineWallet] = useState<string>('');
-    const [ processingFee, _setProcessingFee] = useState<string | null>('');
-
-    // const [ creditCardName, setCreditCardName] = useState("");
-    // const [ creditCardNumber, setCreditCardNumber] = useState("");
-    // const [ creditCardExpire, setCreditCardExpire] = useState("");
-    // const [ creditCardCVV, setCreditCardCVV] = useState("");
-
+    const [ processingFee, _setProcessingFee]              = useState<string | null>('');
+    const { merchant_username }                            = useParams();
+    
     const [ onlineSelectedDevice, setOnlineSelectedDevice] = useState("desktop");
 
-    // const [debitCardName, setDebitCardName] = useState("");
-    // const [debitCardNumber, setDebitCardNumber] = useState("");
-    // const [debitCardExpire, setDebitCardExpire] = useState("");
-    // const [debitCardCVV, setDebitCardCVV] = useState("");
+    const [ creditCardName, setCreditCardName]     = useState("");
+    const [ creditCardNumber, setCreditCardNumber] = useState("");
+    const [ creditCardExpire, setCreditCardExpire] = useState("");
+    const [ creditCardCVV, setCreditCardCVV]       = useState("");
+
+    const [debitCardName, setDebitCardName]     = useState("");
+    const [debitCardNumber, setDebitCardNumber] = useState("");
+    const [debitCardExpire, setDebitCardExpire] = useState("");
+    const [debitCardCVV, setDebitCardCVV]       = useState("");
 
 
-    // const [prepaidCardName, setPrepaidCardName] = useState("");
-    // const [prepaidCardNumber, setPrepaidCardNumber] = useState("");
-    // const [prepaidCardExpire, setPrepaidCardExpire] = useState("");
-    // const [prepaidCardCVV, setPrepaidCardCVV] = useState("");
+    const [prepaidCardName, setPrepaidCardName]     = useState("");
+    const [prepaidCardNumber, setPrepaidCardNumber] = useState("");
+    const [prepaidCardExpire, setPrepaidCardExpire] = useState("");
+    const [prepaidCardCVV, setPrepaidCardCVV]       = useState("");
 
-    const [summaryHeight, setSummaryHeight] = useState<number | undefined>(undefined);
+    const [email, setEmail]                         = useState("");
+    const [mobile, setMobile]                       = useState("");
+    const [cardStreetLineOne, setCardStreetLineOne] = useState("");
+    const [cardStreetLineTwo, setCardStreetLineTwo] = useState("");
+    const [cardCity, setCardCity]                   = useState("");
+    const [cardProvince, setCardProvince]           = useState("");
+    const [cardPostalCode, setCardPostalCode]       = useState(""); 
+
+    const [countries, setCountries] = useState<Country[]>([]);
+    const [mobileCode, setMobileCode] = useState("");
+    const [cardType, setCardType] = useState("");
+
+    const getCardState = () => {
+     switch (selectedCard) {
+        case "credit-card":
+        return {
+            name: creditCardName,
+            setName: setCreditCardName,
+            number: creditCardNumber,
+            setNumber: setCreditCardNumber,
+            email: email,
+            setEmail: setEmail,
+            mobile: mobile,
+            setMobile: setMobile,
+            expire: creditCardExpire,
+            setExpire: setCreditCardExpire,
+            cvv: creditCardCVV,
+            setCvv: setCreditCardCVV,
+            streetLineOne: cardStreetLineOne,
+            setStreetLineOne: setCardStreetLineOne,
+            streetLineTwo: cardStreetLineTwo,
+            setStreetLineTwo: setCardStreetLineTwo,
+            city: cardCity,
+            setCity: setCardCity,
+            province: cardProvince,
+            setProvince: setCardProvince,
+            postalCode: cardPostalCode,
+            setPostalCode: setCardPostalCode,
+            cardType: cardType,
+            setCardType: setCardType,
+        };
+
+        case "debit-card":
+        return {
+            name: debitCardName,
+            setName: setDebitCardName,
+            number: debitCardNumber,
+            setNumber: setDebitCardNumber,
+            email: email,
+            setEmail: setEmail,
+            mobile: mobile,
+            setMobile: setMobile,
+            expire: debitCardExpire,
+            setExpire: setDebitCardExpire,
+            cvv: debitCardCVV,
+            setCvv: setDebitCardCVV,
+            streetLineOne: cardStreetLineOne,
+            setStreetLineOne: setCardStreetLineOne,
+            streetLineTwo: cardStreetLineTwo,
+            setStreetLineTwo: setCardStreetLineTwo,
+            city: cardCity,
+            setCity: setCardCity,
+            province: cardProvince,
+            setProvince: setCardProvince,
+            postalCode: cardPostalCode,
+            setPostalCode: setCardPostalCode,
+        };
+
+        case "prepaid-debit-card":
+        return {
+            name: prepaidCardName,
+            setName: setPrepaidCardName,
+            number: prepaidCardNumber,
+            setNumber: setPrepaidCardNumber,
+            email: email,
+            setEmail: setEmail,
+            mobile: mobile,
+            setMobile: setMobile,
+            expire: prepaidCardExpire,
+            setExpire: setPrepaidCardExpire,
+            cvv: prepaidCardCVV,
+            setCvv: setPrepaidCardCVV,
+            streetLineOne: cardStreetLineOne,
+            setStreetLineOne: setCardStreetLineOne,
+            streetLineTwo: cardStreetLineTwo,
+            setStreetLineTwo: setCardStreetLineTwo,
+            city: cardCity,
+            setCity: setCardCity,
+            province: cardProvince,
+            setProvince: setCardProvince,
+            postalCode: cardPostalCode,
+            setPostalCode: setCardPostalCode,
+        };
+
+        default:
+        return {};
+    }
+    };
+
+    const currentCard = getCardState();
+
+    const getCardType = (cardNumber: string): "Visa" | "Mastercard" | "Unknown" => {
+        const cleaned = cardNumber.replace(/\s+/g, ""); // remove spaces
+
+        if (/^4[0-9]{0,15}$/.test(cleaned)) return "Visa";
+        if (/^(5[1-5][0-9]{0,14}|2(2[2-9][0-9]{0,12}|[3-6][0-9]{0,13}|7[01][0-9]{0,12}|720[0-9]{0,12}))$/.test(cleaned)) return "Mastercard";
+
+        return "Unknown";
+    };
+
+    const [_summaryHeight, setSummaryHeight] = useState<number | undefined>(undefined);
     
     // const PROCESSING_FEE = 10;
     const SYSTEM_FEE = amount >= 100 ? 10 : 0;
 
     const PROCESSING_FEE = Number(processingFee ?? 0);
 
-    const totalAmount = useMemo(() => amount + PROCESSING_FEE + SYSTEM_FEE, [amount, PROCESSING_FEE]);
+    const totalAmount = useMemo(() => amount + PROCESSING_FEE + SYSTEM_FEE, [amount, PROCESSING_FEE, SYSTEM_FEE]);
 
-    const success_url         = import.meta.env.VITE_SUCCESS_REDIRECT_URL;
-    const failed_url          = import.meta.env.VITE_FAILED_REDIRECT_URL;
-    const base_url            = import.meta.env.VITE_API_BASE_URL;
-    const username            = import.meta.env.VITE_USERNAME;
+    const base_url            = import.meta.env.VITE_BASE_URL;
+    const success_url         = `${base_url}/${merchant_username}/status`;
+    const failed_url          = `${base_url}/${merchant_username}/status`;
+    const api_base_url        = import.meta.env.VITE_API_BASE_URL;
+    const username            = merchant_username;
     const payment_methods_url = import.meta.env.VITE_PAYMENT_METHODS_URL;
+    const merchant_name_url   = import.meta.env.VITE_MERCHANT_URL;
+    const core_base_url       = import.meta.env.VITE_CORE_BASE_URL;
 
     const handleAmountChange = (val: string) => {
         const num = parseInt(val.replace(/\D/g, '')) || 0;
@@ -316,17 +485,40 @@ const PaymentPage: React.FC = () => {
     const [ paymentResponse, setPaymentResponse] = useState<paymentResponse>();
     const [ methodCodePayload, setMethodCodePayload] = useState("bank_card_2");
     const [ providerCodePayload, setProviderCodePayload] = useState("mastercard_visa");
+    const [ paymentLoading, setPaymentLoading ] = useState (false);
+    const [ merchantName, setMerchantName] = useState ("");
+    const [ isLocked, setIsLocked] = useState (false);
+    const [ loadingMerchant, setLoadingMerchant] = useState(false);
+    const [ merchantError, setMerchantError] = useState<string | null>(null);
+    const safePaymentMethods = paymentmethods.map(({ icon, ...rest }) => rest);
+    const [isCvvMasked, setIsCvvMasked] = useState(false);
+    const [isCardInternational, setIsCardInternational] = useState(false);
+    const [nameError, setNameError] = useState<string>("");
+    const [cardError, setCardError] = useState<string>("");
+    const [emailError, setEmailError] = useState<string>("");
+    const [mobileError, setMobileError] = useState<string>("");
+    const [expError, setExpError] = useState<string>("");
+    const [cvvError, setCvvError] = useState<string>("");
+    const [streetOneError, setStreetOneError] = useState<string>("");
+    const [streetTwoError, setStreetTwoError] = useState<string>("");
+    const [cityError, setCityError] = useState<string>("");
+    const [provinceError, setProvinceError] = useState<string>("");
+    const [postalError, setPostalError] = useState<string>("");
 
+    // UseEffect for fetching payment methods
     useEffect(() => {
         const controller = new AbortController();
 
         async function fetchData() {
             
             try {
+            if (!username) throw new Error("No merchant username in URL");
+
             setLoadingPaymentMethod (true)            
             setError(null);
 
             // await sleep(5000);
+
 
             const response = await fetch(payment_methods_url, {
                 headers: {
@@ -355,13 +547,16 @@ const PaymentPage: React.FC = () => {
                 const apiKey = METHOD_API_MAP[method.id];
                 const apiGroup = apiData?.[apiKey];
 
+                const forceDisable = apiKey === "over_the_counter" || apiKey === "online_banking";
+
                 const isEnabled =
                 Array.isArray(apiGroup) &&
                 apiGroup.some((entry: { status: string }) => entry.status === "on");
 
                 return {
                 ...method,
-                disabled: !isEnabled,
+                // disabled: forceDisable || !isEnabled,
+                disabled: forceDisable || !isEnabled,
                 };
             });
 
@@ -380,6 +575,72 @@ const PaymentPage: React.FC = () => {
         return () => controller.abort();
     }, [username]);
 
+    
+    // const sleep = (ms: number) =>
+    //     new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+    // UseEffect to fetch Merchant Name (Business Name)
+    useEffect(() => {
+      
+        if (!merchant_username) return;
+        const controller = new AbortController();
+
+        async function fetchMerchantName() {
+            try {
+
+                if (!username) throw new Error("No merchant username in URL");
+
+                setLoadingMerchant(true);
+                setMerchantError(null);
+
+                const response = await fetch(`${merchant_name_url.replace(/\/$/, "")}/${merchant_username}`, {
+                    headers: { username, Accept: "application/json" },
+                    signal: controller.signal,
+                });
+
+                
+                if (!response.ok) {
+                    // If server returns 500 or 404, navigate to 404 page
+                    if (response.status >= 400 && response.status < 600) {
+                        navigate("/404", { replace: true });
+                        return;
+                    }
+                    throw new Error(`HTTP error: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.merchant_name) {
+                    setMerchantName(data.merchant_name);
+                } else {
+                    navigate("/404", { replace: true });
+                }
+
+                
+
+            } catch (err) {
+                console.error("Merchant fetch error:", err);
+                navigate("/404", { replace: true });
+            } finally {
+                // await sleep(5000);
+                setLoadingMerchant(false);
+            }
+        }
+
+        fetchMerchantName();
+
+        return () => controller.abort();
+    }, [merchant_username, username, merchant_name_url, navigate]);
+
+
+    // UseEffect for console logging the error
+    useEffect(() => {
+        if (merchantError) {
+            console.error("Merchant Fetch Error:", merchantError);
+        }
+    }, [merchantError]);
+
+    // UseEffect for setting the method code and provider code to be sent on create payment endpoint
     useEffect(() => {
         let methodCode = "";
         let providerCode = "";
@@ -401,7 +662,7 @@ const PaymentPage: React.FC = () => {
                 const selectedBankData = availableBanks.find(
                     (item: BankTransfer) => item.name === selectedBank
                 );
-
+                // console.log(selectedBank)
                 if (selectedBankData) {
                     methodCode   = selectedBankData.method_code;
                     providerCode = selectedBankData.provider_code;
@@ -502,9 +763,10 @@ const PaymentPage: React.FC = () => {
     const handlePaymentSuccess = async() => {
         // console.log(success_url)
         // console.log(failed_url)
-
         try{
+            if (!username) throw new Error("No merchant username in URL");
 
+            setPaymentLoading(true)
             const payload = {
                 amount              : amount,
                 method_code         : methodCodePayload,
@@ -513,7 +775,7 @@ const PaymentPage: React.FC = () => {
                 failed_redirect_url : failed_url
             }
 
-            const payment_response = await fetch(`${base_url}/payment-page/payment`, {
+            const payment_response = await fetch(`${api_base_url}/payment-page/payment`, {
                 method: "POST",
                 headers: {
                     "username": username,
@@ -530,49 +792,58 @@ const PaymentPage: React.FC = () => {
             // console.log("API response:", data);
 
             
-            // Build full summary object
-            const paymentSummary = {
-                subTotal: amount,
-                processingFee: data.fees.processing_fee,
-                systemFee: data.fees.system_fee,
-                totalAmount,
-                method: selectedMethodLabel,
-                methodId: selectedMethodId, 
-                referenceNo: data.reference_id, 
-                dateTime: new Date().toLocaleString("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: true
-                }),
+            const subTotal = Number(amount); // from your state/input
+            const processingFee = Number(data.fees.processing_fee);
+            const systemFee = Number(data.fees.system_fee);
 
-            };
+            const totalAmount = subTotal + processingFee + systemFee;
+
+            // Build full summary object
+                const paymentSummary = {
+                    subTotal,
+                    processingFee,
+                    systemFee,
+                    totalAmount,
+                    method: selectedMethodLabel,
+                    methodId: selectedMethodId, 
+                    referenceNo: data.reference_id, 
+                    dateTime: new Date().toLocaleString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true
+                    }),
+                    merchantName,
+                };
 
             setPaymentResponse(data);
-
             switch (data.status) {
                 case "SUCCESS":
-                    navigate("/status/success", { state: { paymentSummary } });
+                    navigate(`/${merchant_username}/status/success`, { state: { paymentSummary } });
                     break;
 
                 case "PENDING":
-                    navigate("/status/pending", { state: { paymentSummary } });
+                    navigate(`/${merchant_username}/status/pending`, { state: { paymentSummary } });
                     break;
 
                 case "FAILED":
-                    navigate("/status/failed", { state: { paymentSummary } });
+                    navigate(`/${merchant_username}/status/failed`, { state: { paymentSummary } });
                     break;
 
                 default:
                     console.warn("Unknown payment status:", data.status);
                     navigate("/status/failed", { state: { paymentSummary } });
             }
+            return data;
+
         }catch (error){
             console.error("Payment error:", error);
             // fallback navigation
             navigate("/status/failed");
+        }finally{
+            setPaymentLoading(false);
         }
     };
 
@@ -595,7 +866,7 @@ const PaymentPage: React.FC = () => {
     // }
 
     const Spinner = () => (
-        <span className="inline-block w-8 h-8 border-4 border-white/30 border-t-blue-300 rounded-full animate-spin" />
+        <span className="inline-block w-8 h-8 border-4 border-white/30 border-t-green-300 rounded-full animate-spin" />
     );
 
     useEffect(() => {
@@ -611,35 +882,205 @@ const PaymentPage: React.FC = () => {
         // console.log("Selected bank changed:", selectedBank);
     }, [selectedBank]);
 
+    // UseEffect for setting the processsing Fee, hardcoded for now while not fixed in API
+    // useEffect(() => {
+    // // Lookup table for fees
+    // const processingFees: Record<string, Record<string, string>> = {
+    //     card: { default: "3.50" },
+    //     bank: {
+    //         "UnionBank of the Philippines"  : "10.00",
+    //         "Bank of the Philippine Islands": "15.00",
+    //     },
+    //     online: {
+    //         "Metrobank"                     : "5.00",
+    //         "Land Bank of the Philippines"  : "5.00",
+    //         "Sterling Bank of Asia"         : "5.00",
+    //         "UCPB Savings"                  : "5.00",
+    //         "Bank of the Philippine Islands": "5.00",
+    //         "UnionBank of the Philippines"  : "5.00",
+    //         "BDO Unibank Inc."              : "5.00",
+    //     },
+    //     otc: {
+    //         "Land Bank of the Philippines"  : "5.00",
+    //         "Bank of the Philippine Islands": "5.00",
+    //     },
+    //     wallet: {
+    //         "Shopee Pay": "2.50",
+    //         "Grab Pay": "2.50",
+    //     },
+    // };
+
+    // let fee = "0.00"; // default fallback
+
+    // if (method === "card") {
+    //     fee = processingFees.card.default;
+    // } else if (method === "bank" && selectedBank in processingFees.bank) {
+    //     fee = processingFees.bank[selectedBank];
+    // } else if (method === "online" && selectedOnlineBank in processingFees.online) {
+    //     fee = processingFees.online[selectedOnlineBank];
+    // } else if (method === "otc" && selectedOnlineOTC in processingFees.otc) {
+    //     fee = processingFees.otc[selectedOnlineOTC]
+    // } else if (method === "wallet" && selectedOnlineWallet in processingFees.wallet) {
+    //     fee = processingFees.wallet[selectedOnlineWallet]
+    // }
+
+    // _setProcessingFee(fee);
+
+    // }, [selectedBank, selectedOnlineBank, selectedOnlineOTC, selectedOnlineWallet, method]);
+
+    // UseEffect for fetching the country codes
+    
+    useEffect(() => {
+
+        if (method !== "card") return;
+
+        fetch(`${core_base_url}/frontend/api/v3/enduser/get/country`, {
+            method: "GET",
+        })
+            .then((response) => {
+                // console.log("Country Code fetch response:", response);
+                return response.json();
+            })
+            .then((data: countryCode) => {
+                const countryList = data.data;
+
+                setCountries(countryList);
+
+                // set PH as default
+                const defaultCountry = countryList.find(c => c.code === "PH");
+                if (defaultCountry) {
+                    setMobileCode(defaultCountry.mobile_code);
+                }
+            })
+            .catch((err) => {
+                console.error("Failed to load country codes:", err);
+            });
+    }, [method]);
+
+    // BIN Checker
+    async function checkBin(cardNumber: string) {
+        try {
+            const response = await fetch(`${api_base_url}/payment-page/bin-lookup?card_number=${cardNumber}`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+            });
+
+            if (!response.ok) throw new Error("Failed to check BIN");
+
+            const data: BINCheck = await response.json();
+
+            let finalCardType: string
+
+            if (data["card-type"] === "CREDIT"){
+                finalCardType = "credit_card";
+            }else if (data["card-type"] === "DEBIT"){
+                finalCardType = data["is-prepaid"] ? "prepaid_card" : "debit_card";
+            }else {
+                finalCardType = "NoCardTypeReceived"
+            }
+
+            return {
+                country_code: data["country-code"],
+                cardType: finalCardType
+            };
+        } catch (err) {
+            console.error("BIN check error:", err);
+            return null; // or throw if you want to handle errors in onBlur
+        }
+    }
+
+    // useEffect (() => {
+    //     console.log("International Card: ",isCardInternational)
+    // },[isCardInternational])
+
+    
+    const rawCardNumber = currentCard?.number?.replace(/\s/g, "") ?? "";
+
+    // Card Details Checker to know if the user can proceed
+    const isCardFormValid =
+        currentCard?.name &&
+        rawCardNumber.length >= 13 &&
+        rawCardNumber.length <= 16 &&
+        !nameError &&
+        !cardError &&
+        currentCard?.expire &&
+        !expError &&
+        currentCard?.cvv &&
+        !cvvError &&
+        currentCard?.email &&
+        !emailError &&
+        currentCard?.mobile &&
+        !mobileError &&
+        (
+            !isCardInternational || (
+                currentCard?.streetLineOne &&
+                !streetOneError &&
+                currentCard?.streetLineTwo &&
+                !streetTwoError &&
+                currentCard?.city &&
+                !cityError &&
+                currentCard?.province &&
+                !provinceError &&
+                currentCard?.postalCode &&
+                !postalError
+            )
+    );
+
+    //  ==================
+    //  START OF COMPONENT
+    //  ==================
+    const detectedCardMap: Record<string, string> = {
+        "credit_card": "Credit Card",
+        "debit_card": "Debit Card",
+        "prepaid_card": "Prepaid Card"
+    };
+
     return (
-        <div className="min-h-screen bg-linear-to-br from-[#FFFFFF] to-[#D0BBE6] flex flex-col items-center justify-center p-2 sm:p-4 font-sans text-slate-700">
+    <>
+        {loadingMerchant && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-16 h-16 border-4 border-[#c8f8db] border-t-[#75EEA5] rounded-full animate-spin" />
+                    {/* <p className="text-sm font-semibold text-[#1B2A27]">
+                        
+                    </p> */}
+                </div>
+            </div>
+        )}
+
+        <div className="min-h-screen bg-linear-to-br from-[#FFFFFF] to-[#C9FCE9] flex flex-col items-center justify-center p-2 sm:p-4 font-sans text-slate-700">
         
         {/* Condensed Header */}
         <header className="flex flex-col items-center mb-4 pt-10">
             <div className="w-20 h-20 bg-[#D9D9D9] rounded-full mb-2" />
-            <h2 className="text-lg font-bold text-[#312B5B]">Business Name</h2>
-            <div className="flex gap-4 mt-1 text-[#312B5B]">
-            <Facebook size={16} className="cursor-pointer hover:opacity-70 transition-opacity" />
+            <h2 className="text-lg font-bold text-[#1B2A27]">{merchantName}</h2>
+            <div className="flex gap-4 mt-1 text-[#1B2A27]">
+            {/* <Facebook size={16} className="cursor-pointer hover:opacity-70 transition-opacity" />
                             <Instagram size={16} className="cursor-pointer hover:opacity-70 transition-opacity" />
-                            <Link2 size={16} className="cursor-pointer hover:opacity-70 transition-opacity" />
+                            <Link2 size={16} className="cursor-pointer hover:opacity-70 transition-opacity" /> */}
             </div>
         </header>
 
+        
+
         {/* Main Container */}
         <div className="w-full max-w-4xl bg-white rounded-2xl shadow-lg overflow-hidden p-6 md:p-8 mb-10 md:mb-5">
+
+            {/* Stepper */}
+            <Stepper steps={["Amount", "Confirm"]} currentStep={currentStep} />
             
-            <div className="grid grid-cols-1 lg:grid-cols-3 md:gap-6">
+            <div className="grid grid-cols-1 md:gap-6">
             
                 {/* Form Controls */}
                 <div className="lg:col-span-2 space-y-5 md:space-x-8">
-                    <div ref={formRef}>
+                    <div className="w-full" ref={formRef}>
                         <section className='mb-5'>
-                            <h2 className="text-center font-bold text-[#312B5B] md:text-start">Enter Amount</h2>
-                            <p className="text-xs text-center text-[#37416C] mb-2 md:text-start ">How much would you like to pay?</p>
+                            <h2 className="text-center font-bold text-[#1B2A27] md:text-center">Enter Amount</h2>
+                            <p className="text-xs text-center text-[#1B2A27] mb-2 md:text-center ">How much would you like to pay?</p>
                             
-                            <div className="mb-2 flex justify-center md:justify-start">
+                            <div className="mb-2 flex justify-center md:justify-center">
                                 <div className="flex items-center w-[70%] md:w-1/2 border border-slate-300 rounded-lg px-2 py-1.5">
-                                    <span className="font-bold text-[#312B5B] mr-1">₱</span>
+                                    <span className="font-bold text-[#1B2A27] mr-1">₱</span>
                                     <input
                                     type="text"
                                     value={amount.toLocaleString()}
@@ -657,7 +1098,7 @@ const PaymentPage: React.FC = () => {
                                     onClick={() => setAmount(val)}
                                     className={`w-full py-2 border rounded-lg text-xs font-semibold transition-all ${
                                     amount === val 
-                                        ? 'bg-[#312B5B] border-[#312B5B] text-white' 
+                                        ? 'bg-[#75EEA5] border-[#75EEA5] text-[#112432]' 
                                         : 'border-slate-300 text-slate-500 hover:border-slate-300 cursor-pointer'
                                     }`}
                                 >
@@ -668,8 +1109,8 @@ const PaymentPage: React.FC = () => {
                         </section>
 
                         <section >
-                        <h2 className="text-center md:text-start font-bold text-[#312B5B]">Payment Method</h2>
-                        <p className="text-xs text-center md:text-start text-[#37416C] mb-2">Select how you want to pay</p>
+                        <h2 className="text-center md:text-center font-bold text-[#1B2A27]">Payment Method</h2>
+                        <p className="text-xs text-center md:text-center text-[#1B2A27] mb-2">Select how you want to pay</p>
                         
                         <div className="md:grid md:grid-cols-3 grid grid-cols-2 gap-2 mb-3">
                             {paymentmethods.map((item) => (
@@ -684,7 +1125,7 @@ const PaymentPage: React.FC = () => {
                                         ? 'opacity-40 cursor-not-allowed bg-gray-100 text-gray-400 border-gray-200'
                                         :
                                     method === item.id 
-                                    ? 'bg-[#312B5B] border-[#312B5B] text-white' 
+                                    ? 'bg-[#75EEA5] border-[#42ff8e] text-#112432' 
                                     : 'border-slate-300 text-slate-500 hover:border-slate-300 cursor-pointer' 
                                     }`}
                             >
@@ -701,11 +1142,7 @@ const PaymentPage: React.FC = () => {
 
                                             {item.label}
                                             </>
-                                        )}
-                                    
-                                    
-
-                                        
+                                        )}                 
                                 </span>
                             </button>
                             ))}
@@ -717,7 +1154,7 @@ const PaymentPage: React.FC = () => {
                     {method === 'card' && (
 
                     <div >
-                        <p className="p-2 text-xs font-bold text-[#312B5B]">
+                        <p className="p-2 text-xs font-bold text-[#1B2A27]">
                             What type of card are you using?
                         </p>
                         
@@ -736,9 +1173,9 @@ const PaymentPage: React.FC = () => {
                         return (
                             <div
                             key={card.id}
-                            className={`rounded-md text-xs transition-all duration-300 w-full lg:w-[98%] mx-auto overflow-hidden ${
+                            className={`rounded-md text-xs transition-all duration-300 w-full lg:w-[70%] overflow-hidden ${
                                 isSelected
-                                ? "border-[#312B5B] bg-[#F7F8FA] shadow-sm"
+                                ? "border-[#1B2A27] bg-[#F7F8FA] shadow-sm"
                                 : "border-transparent hover:bg-gray-50"
                             }`}
                             >
@@ -748,23 +1185,472 @@ const PaymentPage: React.FC = () => {
                                 name="paymentMethod"
                                 checked={isSelected}
                                 onChange={() => setSelectedCard(card.id)}
-                                className="w-4 h-4 accent-[#312B5B] shrink-0"
+                                className="w-4 h-4 accent-[#007C5E] shrink-0"
                                 />
                     
                                 <Icon
-                                className="w-5 h-5 text-[#312B5B] shrink-0"
+                                className="w-5 h-5 text-[#1B2A27] shrink-0"
                                 strokeWidth={1.5}
                                 />
                     
                                 <div className="flex flex-col">
-                                <span className="text-sm font-bold text-[#312B5B]">
+                                <span className="text-sm font-bold text-[#1B2A27]">
                                     {card.name}
                                 </span>
-                                <span className="text-xs text-[#312B5B]">
+                                <span className="text-xs text-[#1B2A27]">
                                     {card.description}
                                 </span>
                                 </div>
                             </label>
+
+                                {/* Expandable Card Form */}
+                                {isSelected && (
+                                    <div className="px-6 pb-3 pt-2 border-t border-[#312B5B]">
+                                        <div className="flex justify-between items-center mb-3">
+                                            <h3 className="text-[10px] font-bold text-[#1a1a1a]">
+                                                {card.id.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} Information <span className="text-red-500">*</span>
+                                            </h3>
+
+                                            <div className="flex gap-2">
+                                                {currentCard?.number && getCardType(currentCard.number) === "Visa" && (
+                                                    <img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/visa.svg" alt="Visa" className="h-5" />
+                                                )}
+                                                {currentCard?.number && getCardType(currentCard.number) === "Mastercard" && (
+                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-5" />
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-6 gap-y-3 gap-x-4">
+                                            {/* Full Name */}
+                                            <div className="col-span-3">
+                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Card Holder's Full Name</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Ann Cruz"
+                                                    value={currentCard?.name ?? ""}
+                                                    onChange={(e) => {
+                                                        currentCard?.setName?.(e.target.value);
+                                                        setNameError(""); // clear error while typing
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        const fullName = e.target.value.trim();
+                                                        const isValid = fullName.split(" ").filter(Boolean).length >= 2; // at least 2 words
+                                                        if (!isValid) {
+                                                            setNameError("Please enter your full name (first and last).");
+                                                        }
+                                                    }}
+                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
+                                                    ${nameError ? "border-red-500" : "border-[#D1D5DB]"}
+                                                    focus:border-[#312B5B]`}
+                                                />
+                                                {nameError && <p className="text-red-500 text-[9px] mt-1">{nameError}</p>}
+                                            </div>
+
+                                            <div className="col-span-3"></div>
+
+                                            {/* Card Number */}
+                                            <div className="col-span-3">
+                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Card Number</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="4123 4567 8900 0123"
+                                                    value={currentCard?.number ?? ""}
+                                                    maxLength={19}
+                                                    onChange={(e) => {
+                                                        const rawValue = e.target.value.replace(/\D/g, ""); // digits only
+
+                                                        // format into groups of 4
+                                                        const formatted =
+                                                            rawValue.match(/.{1,4}/g)?.join(" ") ?? "";
+
+                                                        currentCard?.setNumber?.(formatted);
+                                                        setCardError(""); // clear error while typing
+
+                                                        // hide international fields if input is empty
+                                                        if (rawValue.length === 0) {
+                                                            setIsCardInternational(false);
+                                                        }
+                                                    }}
+                                                    onBlur={async (e) => {
+                                                        const rawValue = e.target.value.replace(/\s/g, "");
+
+                                                        if (rawValue.length === 0) {
+                                                            setIsCardInternational(false);
+                                                            return;
+                                                        }
+
+                                                        setCardError("");
+
+                                                         try {
+
+                                                            if (rawValue.length >= 6) {
+                                                                
+                                                                // BIN Checker returns normalized string, not BINCheck
+                                                                const binResult = await checkBin(rawValue);
+                                                                const binCardType = binResult?.cardType;
+                                                                const countryCode = binResult?.country_code;
+
+                                                                if (!binCardType || binCardType === "NoCardTypeReceived") {
+                                                                    setCardError("Unable to verify card type.");
+                                                                    return;
+                                                                }
+
+                                                                // Set international state
+                                                                if (countryCode === "PH") {
+                                                                    setIsCardInternational(false);
+                                                                } else {
+                                                                    setIsCardInternational(true);
+                                                                }
+                                                                
+                                                                // Map selectedCard to normalized binCardType
+                                                                let expectedCardType: string;
+                                                                switch (selectedCard) {
+                                                                    case "credit-card":
+                                                                        expectedCardType = "credit_card";
+                                                                        break;
+                                                                    case "debit-card":
+                                                                        expectedCardType = "debit_card";
+                                                                        break;
+                                                                    case "prepaid-debit-card":
+                                                                        expectedCardType = "prepaid_card";
+                                                                        break;
+                                                                    default:
+                                                                        expectedCardType = "";
+                                                                }
+
+
+                                                                // Compare BIN result with expected
+                                                                if (binCardType !== expectedCardType) {
+                                                                    // setCardError(`Selected card type (${selectedCard}) does not match detected card type (${binCardType}).`);
+                                                                    setCardError(`${detectedCardMap[binCardType] ?? binCardType} detected. Please select ${detectedCardMap[binCardType] ?? binCardType}`);
+                                                                    return;
+                                                                }
+
+                                                                currentCard?.setCardType?.(expectedCardType);
+                                                                // console.log("BIN Checker detected card type:", expectedCardType);
+                                                            }
+                                                        } catch (err) {
+                                                            console.error(err);
+                                                            setCardError("Unable to verify card type.");
+                                                            return;
+                                                        }
+
+                                                        if (!/^\d{13,16}$/.test(rawValue)) {
+                                                            setCardError("Card number must be 13-16 digits.");
+                                                            return;
+                                                        }   
+
+                                                        setCardError("");
+                                                    }}
+                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
+                                                    ${cardError ? "border-red-500" : "border-[#D1D5DB]"}
+                                                    focus:border-[#312B5B]`}
+                                                />
+                                                {cardError && (
+                                                    <p className="text-red-500 text-[9px] mt-1">{cardError}</p>
+                                                )}
+                                            </div>
+
+                                            {/* Expiration */}
+                                            <div className="col-span-2">
+                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Expiration Date</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="MM / YY"
+                                                    value={currentCard?.expire ?? ""}
+                                                    onChange={(e) => {
+                                                        let value = e.target.value.replace(/\D/g, ""); // remove non-digits
+                                                        if (value.length > 4) value = value.slice(0, 4); // limit to 4 digits MMYY
+
+                                                        // auto-insert " / " after the first two digits
+                                                        let formatted = value;
+                                                        if (value.length > 2) {
+                                                            formatted = value.slice(0, 2) + " / " + value.slice(2);
+                                                        }
+
+                                                        currentCard?.setExpire?.(formatted);
+                                                        setExpError(""); // clear error while typing
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        const value = e.target.value.trim();
+                                                        const [monthStr, yearStr] = value.split("/").map(s => s.trim());
+                                                        const month = parseInt(monthStr, 10);
+                                                        const year = parseInt(yearStr, 10);
+
+                                                        const now = new Date();
+                                                        const currentYear = now.getFullYear() % 100; // YY
+                                                        const currentMonth = now.getMonth() + 1; // 1–12
+
+                                                        if (
+                                                            !/^\d{2}\s?\/\s?\d{2}$/.test(value) || // format MM/YY
+                                                            month < 1 ||
+                                                            month > 12 ||
+                                                            year < currentYear ||
+                                                            (year === currentYear && month < currentMonth)
+                                                        ) {
+                                                            setExpError("Please enter a valid, non-expired date (MM / YY).");
+                                                        }
+                                                    }}
+                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
+                                                    ${expError ? "border-red-500" : "border-[#D1D5DB]"}
+                                                    focus:border-[#312B5B]`}
+                                                />
+                                                {expError && <p className="text-red-500 text-[9px] mt-1">{expError}</p>}
+                                            </div>
+
+                                            {/* CVV */}
+                                            <div className="col-span-1">
+                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">CVV</label>
+                                                <input
+                                                    type={isCvvMasked ? "password" : "text"}
+                                                    placeholder="3 Digits"
+                                                    value={currentCard?.cvv ?? ""}
+                                                    maxLength={3}
+                                                    onChange={(e) => {
+                                                    // Remove non-digits
+                                                    const digitsOnly = e.target.value.replace(/\D/g, "");
+                                                    currentCard?.setCvv?.(digitsOnly);
+                                                    setCvvError(""); // clear error while typing
+                                                    }}
+                                                    onBlur={(e) => {
+                                                    if (!/^\d{3}$/.test(e.target.value)) {
+                                                        setCvvError("CVV must be 3 digits.");
+                                                    }
+                                                    setIsCvvMasked(true);
+                                                    }}
+                                                    onFocus={() => setIsCvvMasked(false)}
+                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
+                                                    ${cvvError ? "border-red-500" : "border-[#D1D5DB]"}
+                                                    focus:border-[#312B5B]`}
+                                                />
+                                                {cvvError && <p className="text-red-500 text-[9px] mt-1">{cvvError}</p>}
+                                            </div>
+                                            
+                                            {/* Email */}
+                                            <div className="col-span-3">
+                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Email Address</label>
+                                                <input
+                                                    type="email"
+                                                    placeholder="anncruz@email.com"
+                                                    value={currentCard?.email ?? ""}
+                                                    onChange={(e) => {
+                                                        currentCard?.setEmail?.(e.target.value);
+                                                        setEmailError("");
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        const value = e.target.value.trim();
+                                                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                                                        if (!emailRegex.test(value)) {
+                                                            setEmailError("Please enter a valid email address.");
+                                                        }
+                                                    }}
+                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
+                                                    ${emailError ? "border-red-500" : "border-[#D1D5DB]"}
+                                                    focus:border-[#312B5B]`}
+                                                />
+                                                {emailError && <p className="text-red-500 text-[9px] mt-1">{emailError}</p>}
+                                            </div>
+
+                                            {/* Mobile */}
+                                            <div className="col-span-3">
+                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Mobile Number</label>
+
+                                                <div className="flex gap-2">
+                                                    {/* Country Code Select */}
+                                                    <select
+                                                        value={mobileCode}
+                                                        onChange={(e) => setMobileCode(e.target.value)}
+                                                        className="max-w-[50px] bg-transparent border-b border-[#D1D5DB] outline-none text-[11px] font-semibold text-black focus:border-[#312B5B]"
+                                                    >
+                                                        {countries.map((country) => (
+                                                            <option
+                                                                key={country.id}
+                                                                value={country.mobile_code}
+                                                            >
+                                                                ({country.mobile_code}) {country.currency || country.name}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+
+                                                    <input
+                                                        type="text"
+                                                        placeholder="9123456789"
+                                                        value={currentCard?.mobile ?? ""}
+                                                        onChange={(e) => {
+                                                            const digits = e.target.value.replace(/\D/g, "");
+                                                            currentCard?.setMobile?.(digits);
+                                                            setMobileError("");
+                                                        }}
+                                                        onBlur={(e) => {
+                                                            const value = e.target.value;
+                                                            if (/^\d{0}$/.test(value)) {
+                                                                setMobileError("Mobile number is required");
+                                                            }else if (/^\d{1,9}$/.test(value)) {
+                                                                setMobileError("Incomplete Mobile Number");
+                                                            }
+                                                        }}
+                                                        maxLength={11}
+                                                        className={`flex-1 max-w-[90px] md:max-w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
+                                                        ${mobileError ? "border-red-500" : "border-[#D1D5DB]"}
+                                                        focus:border-[#312B5B]`}
+                                                    />
+                                                </div>
+
+                                                {mobileError && (
+                                                    <p className="text-red-500 text-[9px] mt-1">{mobileError}</p>
+                                                )}
+                                            </div>
+  
+                                            { isCardInternational && (
+                                            <>
+                                             {/* Country Selector Button */}
+                                            <div className="col-span-6 py-1">
+                                                <button className="w-full flex items-center justify-center gap-2 py-1 border border-[#D1D5DB] rounded bg-[#F9FAFB] text-[11px] font-medium text-gray-700">
+                                                    <img src="https://flagcdn.com/w20/us.png" alt="US Flag" className="w-4 h-auto" />
+                                                    US - United States
+                                                </button>
+                                            </div>
+                                            
+                                            {/* Address Street Line 1 */}
+                                            
+
+                                            <div className="col-span-3">
+                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Card Street Line 1</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Enter Street Line 1"
+                                                    value={currentCard?.streetLineOne ?? ""}
+                                                    onChange={(e) => {
+                                                        currentCard?.setStreetLineOne?.(e.target.value);
+                                                        setStreetOneError(""); // clear error while typing
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        if (!e.target.value.trim()) {
+                                                            setStreetOneError("Street address is required.");
+                                                        }
+                                                    }}
+                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
+                                                    ${streetOneError ? "border-red-500" : "border-[#D1D5DB]"}
+                                                    focus:border-[#312B5B]`}
+                                                />
+                                                {streetOneError && <p className="text-red-500 text-[9px] mt-1">{streetOneError}</p>}
+                                            </div>
+
+                                            {/* Address Street Line 2 */}
+                                            <div className="col-span-3">
+                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Card Street Line 2</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Enter Street Line 2"
+                                                    value={currentCard?.streetLineTwo ?? ""}
+                                                    onChange={(e) => currentCard?.setStreetLineTwo?.(e.target.value)}
+                                                    onBlur={(e) => {
+                                                        if (!e.target.value.trim()) {
+                                                            setStreetTwoError("Street address is required.");
+                                                        }
+                                                    }}
+                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
+                                                    ${streetTwoError ? "border-red-500" : "border-[#D1D5DB]"}
+                                                    focus:border-[#312B5B]`}
+                                                />
+                                                {streetTwoError && <p className="text-red-500 text-[9px] mt-1">{streetTwoError}</p>}
+                                            </div>
+                                             {/* Card City  */}
+                                            <div className="col-span-3">
+                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Card City</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Enter Card City"
+                                                    value={currentCard?.city ?? ""}
+                                                    onChange={(e) => {
+                                                        currentCard?.setCity?.(e.target.value);
+                                                        setCityError(""); // clear error while typing
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        const value = e.target.value.trim();
+                                                        // Required & only letters/spaces
+                                                        if (!value) {
+                                                            setCityError("City is required.");
+                                                        } else if (!/^[a-zA-Z\s]+$/.test(value)) {
+                                                            setCityError("City can only contain letters and spaces.");
+                                                        } else {
+                                                            setCityError("");
+                                                        }
+                                                    }}
+                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
+                                                    ${cityError ? "border-red-500" : "border-[#D1D5DB]"}
+                                                    focus:border-[#312B5B]`}
+                                                />
+                                                {cityError && <p className="text-red-500 text-[9px] mt-1">{cityError}</p>}
+                                            </div>
+
+                                            {/* Card Postal Province  */}
+                                            <div className="col-span-3">
+                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Card Postal Province</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Enter Card Postal Province"
+                                                    value={currentCard?.province ?? ""}
+                                                    onChange={(e) => {
+                                                        currentCard?.setProvince?.(e.target.value);
+                                                        setProvinceError(""); // clear error while typing
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        const value = e.target.value.trim();
+                                                        // Required & only letters/spaces
+                                                        if (!value) {
+                                                            setProvinceError("Province is required.");
+                                                        } else if (!/^[a-zA-Z\s]+$/.test(value)) {
+                                                            setProvinceError("Province can only contain letters and spaces.");
+                                                        } else {
+                                                            setProvinceError("");
+                                                        }
+                                                    }}
+                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
+                                                    ${provinceError ? "border-red-500" : "border-[#D1D5DB]"}
+                                                    focus:border-[#312B5B]`}
+                                                />
+                                                {provinceError && <p className="text-red-500 text-[9px] mt-1">{provinceError}</p>}
+                                            </div>
+
+                                            <div className="col-span-3">
+                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Card Postal Code</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Enter Card Postal Code"
+                                                    value={currentCard?.postalCode ?? ""}
+                                                    onChange={(e) => {
+                                                        currentCard?.setPostalCode?.(e.target.value);
+                                                        setPostalError(""); // clear error while typing
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        const value = e.target.value.trim();
+                                                        if (!value) {
+                                                            setPostalError("Postal code is required.");
+                                                        } else if (!/^\d{4,6}$/.test(value)) {
+                                                            setPostalError("Postal code must be 4 to 6 digits.");
+                                                        } else {
+                                                            setPostalError("");
+                                                        }
+                                                    }}
+                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
+                                                    ${postalError ? "border-red-500" : "border-[#D1D5DB]"}
+                                                    focus:border-[#312B5B]`}
+                                                />
+                                                {postalError && <p className="text-red-500 text-[9px] mt-1">{postalError}</p>}
+                                            </div>
+                                            </>
+                                            )}
+
+                                            <div className="col-span-6 mt-2">
+                                                <p className="text-[9px] text-[#6F7282] text-center leading-tight opacity-80">
+                                                    Make sure your browser displays Pulse Tech. Be careful with your card details when using a publicly available computer, or using public WIFI.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         );
                         })}
@@ -775,7 +1661,7 @@ const PaymentPage: React.FC = () => {
                     {method === 'bank' && (
                         
                         <div>
-                            <p className="p-2 text-xs font-bold text-[#312B5B]">
+                            <p className="p-2 text-xs font-bold text-[#1B2A27]">
                                 What bank will you use?
                             </p>
                             <div
@@ -793,7 +1679,7 @@ const PaymentPage: React.FC = () => {
                                 key={bank.name}
                                 className={`rounded-md text-xs transition-all duration-300 w-full lg:w-[98%] mx-auto overflow-hidden ${
                                     isSelected
-                                    ? "border-[#312B5B] bg-[#F7F8FA] shadow-sm"
+                                    ? "border-[#1B2A27] bg-[#F7F8FA] shadow-sm"
                                     : "border-transparent hover:bg-gray-50"
                                 }`}
                                 >
@@ -803,7 +1689,7 @@ const PaymentPage: React.FC = () => {
                                     name="bank"
                                     checked={isSelected}
                                     onChange={() => setSelectedBank(bank.name)}
-                                    className="w-4 h-4 accent-[#312B5B] shrink-0"
+                                    className="w-4 h-4 accent-[#007C5E] shrink-0"
                                     />
 
                                     <img
@@ -813,10 +1699,10 @@ const PaymentPage: React.FC = () => {
                                     />
 
                                     <div className="flex flex-col">
-                                    <span className="text-sm font-bold text-[#312B5B]">
+                                    <span className="text-sm font-bold text-[#1B2A27]">
                                         {bank.name}
                                     </span>
-                                    {/* <span className="text-xs text-[#312B5B]">
+                                    {/* <span className="text-xs text-[#1B2A27]">
                                         {bank.description}
                                     </span> */}
                                     </div>
@@ -832,7 +1718,7 @@ const PaymentPage: React.FC = () => {
 
                     {method === 'online' && (
                     <div>
-                        <p className="p-2 text-xs font-bold text-[#312B5B]">
+                        <p className="p-2 text-xs font-bold text-[#1B2A27]">
                             What type of online banking would you use?
                         </p>
                         <div className="flex mb-3 w-[60%] md:w-[70%] mx-auto items-center justify-center">
@@ -850,8 +1736,8 @@ const PaymentPage: React.FC = () => {
                             <div
                             className={`flex items-center justify-center whitespace-nowrap gap-3 py-3 px-4 rounded-tl rounded-bl transition-all duration-200 ${
                                 onlineSelectedDevice === "desktop"
-                                ? "bg-[#312B5B] text-white shadow-md"
-                                : "text-[#312B5B] hover:bg-gray-200"
+                                ? "bg-[#1B2A27] text-white shadow-md"
+                                : "text-[#1B2A27] hover:bg-gray-200"
                             }`}
                             >
                             <Monitor
@@ -883,8 +1769,8 @@ const PaymentPage: React.FC = () => {
                             <div
                             className={`flex items-center justify-center whitespace-nowrap  gap-3 py-3 px-4 rounded-tr rounded-br transition-all duration-200 ${
                                 onlineSelectedDevice === "mobile"
-                                ? "bg-[#312B5B] text-white shadow-md"
-                                : "text-[#312B5B] hover:bg-gray-200"
+                                ? "bg-[#1B2A27] text-white shadow-md"
+                                : "text-[#1B2A27] hover:bg-gray-200"
                             }`}
                             >
                             <Smartphone
@@ -913,54 +1799,41 @@ const PaymentPage: React.FC = () => {
                         >
 
                         {availableOnlineBanks.map((bank) => {
-                        const isSelected = selectedOnlineBank === bank.name;
+                            const isSelected = selectedOnlineBank === bank.name;
 
-                        return (
-                            <div
-                            key={bank.name}
-                            className={`flex rounded-md text-xs transition-all duration-300 w-full lg:w-full mx-auto overflow-hidden ${
-                                isSelected
-                                ? "border-[#312B5B] bg-[#F7F8FA] shadow-sm"
-                                : "border-transparent hover:bg-gray-50"
-                            }`}
-                            >
-                            <label className="flex items-center gap-4 p-2 cursor-pointer">
+                            return (
+                                <label
+                                key={bank.name}
+                                className={`flex items-center gap-4 p-2 rounded-md text-xs transition-all duration-300 w-full lg:w-full mx-auto cursor-pointer overflow-hidden ${
+                                    isSelected
+                                    ? "border-[#1B2A27] bg-[#F7F8FA] shadow-sm"
+                                    : "border-transparent hover:bg-gray-50"
+                                }`}
+                                >
                                 <input
-                                type="radio"
-                                name="onlineMethod"
-                                checked={isSelected}
-                                onChange={() => setSelectedOnlineBank(bank.name)}
-                                className="w-4 h-4 accent-[#312B5B] shrink-0"
+                                    type="radio"
+                                    name="onlineMethod"
+                                    checked={isSelected}
+                                    onChange={() => setSelectedOnlineBank(bank.name)}
+                                    className="w-4 h-4 accent-[#007C5E] shrink-0"
                                 />
 
                                 <div className="w-9 h-9 rounded flex items-center justify-center shrink-0 overflow-hidden">
-                                <img
+                                    <img
                                     src={bank.main_logo_url}
                                     alt={bank.name}
                                     className="w-full h-full object-contain p-1"
-                                />
+                                    />
                                 </div>
 
                                 <div className="flex flex-col leading-tight">
-                                <span className="text-sm font-bold text-[#312B5B]">
-                                    {bank.name}
-                                </span>
-
-                                {/* <span className="text-[10px] text-[#312B5B]">
-                                    {bank.description}
-                                    {bank.fee && (
-                                    <span className="ml-2 text-[10px] text-[#312B5B]">
-                                    {bank.fee}
-                                    </span>
-                                    )}
-                                </span> */}
-
-                                
+                                    <span className="text-sm font-bold text-[#1B2A27]">{bank.name}</span>
+                                    {/* Optional description */}
                                 </div>
-                            </label>
-                            </div>
-                        );
+                                </label>
+                            );
                         })}
+
                         </div>
                     </div>
                     )}
@@ -968,7 +1841,7 @@ const PaymentPage: React.FC = () => {
                     {method === 'otc' && (
                         <div>
                         
-                            <p className="p-2 text-xs font-bold text-[#312B5B]">
+                            <p className="p-2 text-xs font-bold text-[#1B2A27]">
                                 What kind of OTC do you prefer?
                             </p>
 
@@ -988,7 +1861,7 @@ const PaymentPage: React.FC = () => {
                             key={otc.name}
                             className={`rounded-md text-xs transition-all duration-300 w-full lg:w-[98%] mx-auto overflow-hidden ${
                                 isSelected
-                                ? "border-[#312B5B] bg-[#F7F8FA] shadow-sm"
+                                ? "border-[#1B2A27] bg-[#F7F8FA] shadow-sm"
                                 : "border-transparent hover:bg-gray-50"
                             }`}
                             >
@@ -998,7 +1871,7 @@ const PaymentPage: React.FC = () => {
                                 name="onlineMethod"
                                 checked={isSelected}
                                 onChange={() => setSelectedOnlineOTC(otc.name)}
-                                className="w-4 h-4 accent-[#312B5B] shrink-0"
+                                className="w-4 h-4 accent-[#007C5E] shrink-0"
                                 />
 
                                 {/* <div className="w-5 h-5 rounded flex items-center justify-center shrink-0 overflow-hidden">
@@ -1008,15 +1881,15 @@ const PaymentPage: React.FC = () => {
                                 <img
                                     src={otc.main_logo_url}
                                     alt={otc.name}
-                                    className="w-10 h-10 object-contain p-1"
+                                    className="w-7 h-7 object-contain p-1"
                                 />
 
                                 <div className="flex flex-col leading-tight">
-                                <span className="text-sm font-bold text-[#312B5B]">
+                                <span className="text-sm font-bold text-[#1B2A27]">
                                     {otc.name}
                                 </span>
 
-                                {/* <span className="text-xs text-[#312B5B] mt-0.5">
+                                {/* <span className="text-xs text-[#1B2A27] mt-0.5">
                                     {otc.description}
                                 </span> */}
 
@@ -1032,7 +1905,7 @@ const PaymentPage: React.FC = () => {
                     {method === 'wallet' && (
                         <div>
                         
-                            <p className="p-2 text-xs font-bold text-[#312B5B]">
+                            <p className="p-2 text-xs font-bold text-[#1B2A27]">
                                 What will you use?
                             </p>
                         <div
@@ -1051,7 +1924,7 @@ const PaymentPage: React.FC = () => {
                             key={wallet.name}
                             className={`rounded-md text-xs transition-all duration-300 w-full lg:w-[98%] mx-auto overflow-hidden ${
                                 isSelected
-                                ? "border-[#312B5B] bg-[#F7F8FA] shadow-sm"
+                                ? "border-[#1B2A27] bg-[#F7F8FA] shadow-sm"
                                 : "border-transparent hover:bg-gray-50"
                             }`}
                             >
@@ -1061,10 +1934,10 @@ const PaymentPage: React.FC = () => {
                                 name="onlineMethod"
                                 checked={isSelected}
                                 onChange={() => setSelectedOnlineWallet(wallet.name)}
-                                className="w-4 h-4 accent-[#312B5B] shrink-0"
+                                className="w-4 h-4 accent-[#007C5E] shrink-0"
                                 />
 
-                                <div className="w-10 h-10 rounded flex items-center justify-center shrink-0 overflow-hidden">
+                                <div className="w-9 h-9 rounded flex items-center justify-center shrink-0 overflow-hidden">
                                     <img
                                         src={wallet.main_logo_url}
                                         alt={wallet.name}
@@ -1073,11 +1946,11 @@ const PaymentPage: React.FC = () => {
                                 </div>
 
                                 <div className="flex flex-col leading-tight">
-                                <span className="text-sm font-bold text-[#312B5B]">
+                                <span className="text-sm font-bold text-[#1B2A27]">
                                     {wallet.name}
                                 </span>
                                 {/* 
-                                <span className="text-xs text-[#312B5B] mt-0.5">
+                                <span className="text-xs text-[#1B2A27] mt-0.5">
                                     {wallet.description}
                                 </span> */}
 
@@ -1093,23 +1966,23 @@ const PaymentPage: React.FC = () => {
                 </div>
 
                 {/* Summary Card */}    
-                <div className="lg:col-span-1 flex justify-center mb-0 md:mb-4 mt-20 md:mt-0" style={{ height: summaryHeight }}>
-                    <div className="w-full max-w-sm" style={{ height: summaryHeight }}>
+                {/* <div className="lg:col-span-1 flex justify-center mb-0 md:mb-4 mt-20 md:mt-0" style={{ height: _summaryHeight }}>
+                    <div className="w-full max-w-sm" style={{ height: _summaryHeight }}>
                     <div className="bg-[#F4F6F8] rounded-tr-xl rounded-tl-xl p-4 border border-gray-100 flex flex-col shadow-md"
                         
                     >
-                        <h3 className="text-center text-base font-bold tracking-wider text-[#312B5B] mb-8">Payment Summary</h3>
+                        <h3 className="text-center text-base font-bold tracking-wider text-[#1B2A27] mb-8">Payment Summary</h3>
                     
                         <div className="space-y-2 text-xs mb-4">
-                            <div className="flex justify-between text-[#312B5B]">
+                            <div className="flex justify-between text-[#1B2A27]">
                                 <span>Sub Total</span>
                                 <span className="font-medium">{amount}</span>
                             </div>
-                            <div className="flex justify-between text-[#312B5B]">
+                            <div className="flex justify-between text-[#1B2A27]">
                                 <span>Processing Fee</span>
                                 <span className="font-medium">₱{(PROCESSING_FEE).toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between text-[#312B5B]">
+                            <div className="flex justify-between text-[#1B2A27]">
                                 <span>System Fee</span>
                                 <span className="font-medium">₱{(SYSTEM_FEE).toFixed(2)}</span>
                             </div>
@@ -1118,8 +1991,8 @@ const PaymentPage: React.FC = () => {
                         <div className="border-t border-dashed border-[#6F7282] pt-3 mb-4">
                             <div className={`flex justify-between items-center ${
                                 totalAmount >= 100_000 ? 'flex-col gap-1' : 'flex-row'}`}>
-                                <span className="text-base font-bold text-[#312B5B] whitespace-nowrap">You are sending</span>
-                                <span className="text-base font-bold text-[#312B5B]">₱{totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                <span className="text-base font-bold text-[#1B2A27] whitespace-nowrap">You are sending</span>
+                                <span className="text-base font-bold text-[#1B2A27]">₱{totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                             </div>
                             <div className="border-t border-dashed border-[#6F7282] mt-4"/>
                         
@@ -1127,8 +2000,8 @@ const PaymentPage: React.FC = () => {
 
                         <div className="space-y-3 mb-5">
                             <div className="flex justify-between text-xs">
-                            <span className="text-[#312B5B]">Payment Method</span>
-                            <span className="font-bold text-[#312B5B]">{PAYMENT_METHODS.find(m => m.id === method)?.label}</span>
+                            <span className="text-[#1B2A27]">Payment Method</span>
+                            <span className="font-bold text-[#1B2A27]">{PAYMENT_METHODS.find(m => m.id === method)?.label}</span>
                             </div>
                         
                         </div>
@@ -1136,23 +2009,62 @@ const PaymentPage: React.FC = () => {
                     </div>
 
                     <div className='bg-white shadow-lg rounded-bl-lg rounded-br-lg p-5'>
-                        <p className="text-[11px] text-[#312B5B] text-center md:whitespace-nowrap">Make sure the browser bar displays <span className='text-[#312B5B] font-bold'>PulseTech</span></p>
+                        <p className="text-[11px] text-[#1B2A27] text-center md:whitespace-nowrap">Make sure the browser bar displays <span className='text-[#1B2A27] font-bold'>PulseTech</span></p>
                     </div>
                     </div>
-                </div>
+                </div> */}
             
             </div>
+
             <div className="mt-0 md:mt-4 lg:mt-6 w-full flex justify-center items-center">
                 <button
-                    disabled={amount <= 99}
-                    className={`w-1/2 md:w-1/2 lg:w-1/3 py-2 rounded font-bold text-sm transition-all duration-300 shadow-md transform
-                    ${amount > 99
-                        ? 'bg-linear-to-r from-[#2B3565] to-[#0171A3] text-white cursor-pointer hover:from-[#312B5B] hover:to-[#0182B5] hover:shadow-lg hover:-translate-y-0.5 active:scale-95'
+                    disabled={amount <= 99 || paymentLoading || isLocked || (method === "card" && !isCardFormValid)}
+                    // onClick={handlePaymentSuccess}
+                    onClick={ async () => {
+                        setIsLocked(true);
+                        const response = await handlePaymentSuccess();
+
+                        if (!response) {
+                            setIsLocked(false); // unlock if failed
+                            return;
+                        } // exit if failed
+
+                        setCurrentStep(2);
+
+                        const paymentDetails = {
+                            amount: Number(amount),
+                            method,
+                            methodLabel: selectedMethodLabel,
+                            methodId: selectedMethodId,
+                            selectedBank,
+                            selectedCard,
+                            selectedOnlineBank,
+                            selectedOnlineOTC,
+                            selectedOnlineWallet,
+                            totalAmount: Number(totalAmount),
+                            merchantName,
+                            methodCode: methodCodePayload,
+                            safePaymentMethods,
+                            providerCode: providerCodePayload,
+                            processingFee: Number(PROCESSING_FEE),
+                            systemFee: Number(SYSTEM_FEE),
+                            success_url,
+                            failed_url,
+                            paymentResponse: response,
+                            availableBanks,
+                            availableOnlineBanks,
+                            availableOTCBanks,
+                            availableWalletBanks,
+                        };
+                        navigate(`/${merchant_username}/confirm`, { state: { paymentDetails } });
+                    }}
+                            className={`w-1/2 md:w-1/2 lg:w-1/3 py-2 rounded font-bold text-sm transition-all duration-300 shadow-md transform flex justify-center items-center
+                    ${amount > 99 && !paymentLoading && !isLocked && (method !== "card" || isCardFormValid)
+                        ? 'bg-[#202122] text-[#75EEA5] cursor-pointer hover:from-[#1B2A27] hover:to-[#0182B5] hover:shadow-lg hover:-translate-y-0.5 active:scale-95'
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
-                    onClick={handlePaymentSuccess}
-                >
-                    Pay Now
+                        >
+                    {paymentLoading ? <Spinner /> : "Continue"}
                 </button>
             </div>
             {/* <div className="flex justify-center gap-2 mb-4">
@@ -1162,7 +2074,7 @@ const PaymentPage: React.FC = () => {
                     onClick={() => setTestStatus(status as any)}
                     className={`px-3 py-1 rounded text-xs font-semibold border transition ${
                         testStatus === status
-                            ? "bg-[#312B5B] text-white border-[#312B5B]"
+                            ? "bg-[#1B2A27] text-white border-[#1B2A27]"
                             : "border-gray-300 text-gray-600 hover:bg-gray-100"
                     }`}
                 >
@@ -1173,6 +2085,7 @@ const PaymentPage: React.FC = () => {
 
         </div>
         </div>
+        </>
     );
 };
 
