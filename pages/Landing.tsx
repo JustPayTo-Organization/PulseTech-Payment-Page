@@ -1490,6 +1490,7 @@ const PaymentPage: React.FC = () => {
                                                                 setMobileError("Incomplete Mobile Number");
                                                             }
                                                         }}
+                                                        maxLength={11}
                                                         className={`flex-1 max-w-[90px] md:max-w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
                                                         ${mobileError ? "border-red-500" : "border-[#D1D5DB]"}
                                                         focus:border-[#312B5B]`}
