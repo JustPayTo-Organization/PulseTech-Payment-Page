@@ -491,6 +491,7 @@ const PaymentPage: React.FC = () => {
     const [ merchantError, setMerchantError] = useState<string | null>(null);
     const safePaymentMethods = paymentmethods.map(({ icon, ...rest }) => rest);
     const [isCvvMasked, setIsCvvMasked] = useState(false);
+    const [isCardInternational, setIsCardInternational] = useState(false);
     const [nameError, setNameError] = useState<string>("");
     const [cardError, setCardError] = useState<string>("");
     const [emailError, setEmailError] = useState<string>("");
@@ -660,7 +661,7 @@ const PaymentPage: React.FC = () => {
                 const selectedBankData = availableBanks.find(
                     (item: BankTransfer) => item.name === selectedBank
                 );
-                console.log(selectedBank)
+                // console.log(selectedBank)
                 if (selectedBankData) {
                     methodCode   = selectedBankData.method_code;
                     providerCode = selectedBankData.provider_code;
@@ -977,12 +978,61 @@ const PaymentPage: React.FC = () => {
                 finalCardType = "NoCardTypeReceived"
             }
 
-            return finalCardType;
+            return {
+                country_code: data["country-code"],
+                cardType: finalCardType
+            };
         } catch (err) {
             console.error("BIN check error:", err);
             return null; // or throw if you want to handle errors in onBlur
         }
     }
+
+    // useEffect (() => {
+    //     console.log("International Card: ",isCardInternational)
+    // },[isCardInternational])
+
+    
+    const rawCardNumber = currentCard?.number?.replace(/\s/g, "") ?? "";
+
+    // Card Details Checker to know if the user can proceed
+    const isCardFormValid =
+        currentCard?.name &&
+        rawCardNumber.length >= 13 &&
+        rawCardNumber.length <= 16 &&
+        !nameError &&
+        !cardError &&
+        currentCard?.expire &&
+        !expError &&
+        currentCard?.cvv &&
+        !cvvError &&
+        currentCard?.email &&
+        !emailError &&
+        currentCard?.mobile &&
+        !mobileError &&
+        (
+            !isCardInternational || (
+                currentCard?.streetLineOne &&
+                !streetOneError &&
+                currentCard?.streetLineTwo &&
+                !streetTwoError &&
+                currentCard?.city &&
+                !cityError &&
+                currentCard?.province &&
+                !provinceError &&
+                currentCard?.postalCode &&
+                !postalError
+            )
+    );
+
+    //  ==================
+    //  START OF COMPONENT
+    //  ==================
+    const detectedCardMap: Record<string, string> = {
+        "credit_card": "Credit Card",
+        "debit_card": "Debit Card",
+        "prepaid_card": "Prepaid Card"
+    };
 
     return (
     <>
@@ -1215,55 +1265,82 @@ const PaymentPage: React.FC = () => {
 
                                                         currentCard?.setNumber?.(formatted);
                                                         setCardError(""); // clear error while typing
+
+                                                        // hide international fields if input is empty
+                                                        if (rawValue.length === 0) {
+                                                            setIsCardInternational(false);
+                                                        }
                                                     }}
                                                     onBlur={async (e) => {
                                                         const rawValue = e.target.value.replace(/\s/g, "");
 
-                                                        if (!/^\d{13,19}$/.test(rawValue)) {
-                                                            setCardError("Card number must be 16 digits.");
+                                                        if (rawValue.length === 0) {
+                                                            setIsCardInternational(false);
                                                             return;
                                                         }
 
                                                         setCardError("");
 
                                                          try {
-                                                            // BIN Checker returns normalized string, not BINCheck
-                                                            const binCardType: string | null = await checkBin(rawValue);
 
-                                                            if (!binCardType || binCardType === "NoCardTypeReceived") {
-                                                            setCardError("Unable to verify card type.");
-                                                            return;
+                                                            if (rawValue.length >= 6) {
+                                                                
+                                                                // BIN Checker returns normalized string, not BINCheck
+                                                                const binResult = await checkBin(rawValue);
+                                                                const binCardType = binResult?.cardType;
+                                                                const countryCode = binResult?.country_code;
+
+                                                                if (!binCardType || binCardType === "NoCardTypeReceived") {
+                                                                    setCardError("Unable to verify card type.");
+                                                                    return;
+                                                                }
+
+                                                                // Set international state
+                                                                if (countryCode === "PH") {
+                                                                    setIsCardInternational(false);
+                                                                } else {
+                                                                    setIsCardInternational(true);
+                                                                }
+                                                                
+                                                                // Map selectedCard to normalized binCardType
+                                                                let expectedCardType: string;
+                                                                switch (selectedCard) {
+                                                                    case "credit-card":
+                                                                        expectedCardType = "credit_card";
+                                                                        break;
+                                                                    case "debit-card":
+                                                                        expectedCardType = "debit_card";
+                                                                        break;
+                                                                    case "prepaid-debit-card":
+                                                                        expectedCardType = "prepaid_card";
+                                                                        break;
+                                                                    default:
+                                                                        expectedCardType = "";
+                                                                }
+
+
+                                                                // Compare BIN result with expected
+                                                                if (binCardType !== expectedCardType) {
+                                                                    // setCardError(`Selected card type (${selectedCard}) does not match detected card type (${binCardType}).`);
+                                                                    setCardError(`${detectedCardMap[binCardType] ?? binCardType} detected. Please select ${detectedCardMap[binCardType] ?? binCardType}`);
+                                                                    return;
+                                                                }
+
+                                                                currentCard?.setCardType?.(expectedCardType);
+                                                                // console.log("BIN Checker detected card type:", expectedCardType);
                                                             }
-
-                                                            // Map selectedCard to normalized binCardType
-                                                            let expectedCardType: string;
-                                                            switch (selectedCard) {
-                                                                case "credit-card":
-                                                                    expectedCardType = "credit_card";
-                                                                    break;
-                                                                case "debit-card":
-                                                                    expectedCardType = "debit_card";
-                                                                    break;
-                                                                case "prepaid-debit-card":
-                                                                    expectedCardType = "prepaid_card";
-                                                                    break;
-                                                                default:
-                                                                    expectedCardType = "";
-                                                            }
-
-                                                            // Compare BIN result with expected
-                                                            if (binCardType !== expectedCardType) {
-                                                                setCardError(`Selected card type (${selectedCard}) does not match detected card type (${binCardType}).`);
-                                                                return;
-                                                            }
-
-                                                            currentCard?.setCardType?.(expectedCardType);
-                                                            // console.log("BIN Checker detected card type:", expectedCardType);
-
                                                         } catch (err) {
                                                             console.error(err);
                                                             setCardError("Unable to verify card type.");
+                                                            return;
                                                         }
+
+                                                        if (!/^\d{13,16}$/.test(rawValue)) {
+                                                            setCardError("Card number must be 13-16 digits.");
+                                                            return;
+                                                        }   
+
+                                                        setCardError("");
                                                     }}
                                                     className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
                                                     ${cardError ? "border-red-500" : "border-[#D1D5DB]"}
@@ -1406,8 +1483,10 @@ const PaymentPage: React.FC = () => {
                                                         }}
                                                         onBlur={(e) => {
                                                             const value = e.target.value;
-                                                            if (!/^\d{7,15}$/.test(value)) {
+                                                            if (/^\d{0}$/.test(value)) {
                                                                 setMobileError("Mobile number is required");
+                                                            }else if (/^\d{1,9}$/.test(value)) {
+                                                                setMobileError("Incomplete Mobile Number");
                                                             }
                                                         }}
                                                         className={`flex-1 max-w-[90px] md:max-w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
@@ -1420,8 +1499,10 @@ const PaymentPage: React.FC = () => {
                                                     <p className="text-red-500 text-[9px] mt-1">{mobileError}</p>
                                                 )}
                                             </div>
-
-                                            {/* Country Selector Button*/}
+  
+                                            { isCardInternational && (
+                                            <>
+                                             {/* Country Selector Button */}
                                             <div className="col-span-6 py-1">
                                                 <button className="w-full flex items-center justify-center gap-2 py-1 border border-[#D1D5DB] rounded bg-[#F9FAFB] text-[11px] font-medium text-gray-700">
                                                     <img src="https://flagcdn.com/w20/us.png" alt="US Flag" className="w-4 h-auto" />
@@ -1430,6 +1511,8 @@ const PaymentPage: React.FC = () => {
                                             </div>
                                             
                                             {/* Address Street Line 1 */}
+                                            
+
                                             <div className="col-span-3">
                                                 <label className="block text-[9px] text-[#6F7282] mb-0.5">Card Street Line 1</label>
                                                 <input
@@ -1451,6 +1534,7 @@ const PaymentPage: React.FC = () => {
                                                 />
                                                 {streetOneError && <p className="text-red-500 text-[9px] mt-1">{streetOneError}</p>}
                                             </div>
+
                                             {/* Address Street Line 2 */}
                                             <div className="col-span-3">
                                                 <label className="block text-[9px] text-[#6F7282] mb-0.5">Card Street Line 2</label>
@@ -1470,7 +1554,7 @@ const PaymentPage: React.FC = () => {
                                                 />
                                                 {streetTwoError && <p className="text-red-500 text-[9px] mt-1">{streetTwoError}</p>}
                                             </div>
-                                            {/* Card City */}
+                                             {/* Card City  */}
                                             <div className="col-span-3">
                                                 <label className="block text-[9px] text-[#6F7282] mb-0.5">Card City</label>
                                                 <input
@@ -1499,7 +1583,7 @@ const PaymentPage: React.FC = () => {
                                                 {cityError && <p className="text-red-500 text-[9px] mt-1">{cityError}</p>}
                                             </div>
 
-                                            {/* Card Postal Province */}
+                                            {/* Card Postal Province  */}
                                             <div className="col-span-3">
                                                 <label className="block text-[9px] text-[#6F7282] mb-0.5">Card Postal Province</label>
                                                 <input
@@ -1554,6 +1638,8 @@ const PaymentPage: React.FC = () => {
                                                 />
                                                 {postalError && <p className="text-red-500 text-[9px] mt-1">{postalError}</p>}
                                             </div>
+                                            </>
+                                            )}
 
                                             <div className="col-span-6 mt-2">
                                                 <p className="text-[9px] text-[#6F7282] text-center leading-tight opacity-80">
@@ -1930,7 +2016,7 @@ const PaymentPage: React.FC = () => {
 
             <div className="mt-0 md:mt-4 lg:mt-6 w-full flex justify-center items-center">
                 <button
-                    disabled={amount <= 99 || paymentLoading}
+                    disabled={amount <= 99 || paymentLoading || (method === "card" && !isCardFormValid)}
                     // onClick={handlePaymentSuccess}
                     onClick={ async () => {
 
@@ -1968,7 +2054,7 @@ const PaymentPage: React.FC = () => {
                         navigate(`/${merchant_username}/confirm`, { state: { paymentDetails } });
                     }}
                             className={`w-1/2 md:w-1/2 lg:w-1/3 py-2 rounded font-bold text-sm transition-all duration-300 shadow-md transform flex justify-center items-center
-                    ${amount > 99 && !paymentLoading
+                    ${amount > 99 && !paymentLoading && (method !== "card" || isCardFormValid)
                         ? 'bg-[#202122] text-[#75EEA5] cursor-pointer hover:from-[#1B2A27] hover:to-[#0182B5] hover:shadow-lg hover:-translate-y-0.5 active:scale-95'
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
