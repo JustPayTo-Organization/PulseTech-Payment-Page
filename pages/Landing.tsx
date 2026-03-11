@@ -90,57 +90,6 @@ type paymentResponse = {
     redirect_url  : string | null;
 }
 
-type Country = {
-    name       : string;
-    code       : string;
-    created_at : string | null;
-    currency   : string;
-    description: string;
-    id         : number;
-    logo_url   : string;
-    mobile_code: string;
-    nationality: string;
-    status     : string;
-    updated_at : string;
-}
-
-type countryCode = {
-    status      : string;
-    status_code : number;
-    title       : string;
-    subtitle   ?: string;
-    option     ?: {
-        searchable: boolean;
-    };
-    data: Country[];
-}
-
-type BINCheck = {
-    country           : string;
-    "country-code"    : string;
-    "card-brand"      : string;
-    "ip-city"         : string;
-    "ip-blocklists"   : [];
-    "ip-country-code3": string;
-    "is-commercial"   : boolean;
-    "is-reloadable"   : boolean;
-    "ip-country"      : string;
-    "bin-number"      : string;
-    issuer            : string;
-    "issuer-website"  : string;
-    "ip-region"       : string;
-    valid             : boolean,
-    "card-type"       : string;
-    "is-prepaid"      : boolean;
-    "ip-blocklisted"  : boolean;
-    "card-category"   : string;
-    "issuer-phone"    : string;
-    "currency-code"   : string;
-    "ip-matches-bin"  : boolean;
-    "country-code3"   : string;
-    "ip-country-code" : string;
-}
-
 const PRESET_AMOUNTS = [100, 500, 1000, 2500, 5000, 10000];
 
 const PAYMENT_METHODS: PaymentMethod[] = [
@@ -175,7 +124,7 @@ const CARDS: CardOption[] = [
     description: 'Use any debit card with a Visa or Mastercard Logo',
   },
   {
-    id: 'prepaid-debit-card',
+    id: 'prepaid-credit-card',
     name: 'Prepaid Credit Card',
     logo: Wallet,
     description: 'Use any prepaid card with a Visa or Mastercard Logo (Amore, Yazz, EON, etc.)',
@@ -270,147 +219,37 @@ const CARDS: CardOption[] = [
 // ];
 
 const PaymentPage: React.FC = () => {
-    const [currentStep, setCurrentStep]                    = useState(1);
-    const navigate                                         = useNavigate();
-    const location                                         = useLocation();
-    const { previousDetails }                              = location.state || {};
-    const [ amount, setAmount]                             = useState<number>(previousDetails?.amount ?? 0);
-    const [ method, setMethod]                             = useState<string>(previousDetails?.method ?? 'card');
-    const [ selectedBank, setSelectedBank]                 = useState<string>('');
-    const [ selectedCard, setSelectedCard]                 = useState<string>('credit-card');
-    const [ selectedOnlineBank, setSelectedOnlineBank]     = useState<string>('Metrobank');
-    const [ selectedOnlineOTC, setSelectedOnlineOTC]       = useState<string>('');
+    const [currentStep, setCurrentStep] = useState(1);
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { previousDetails } = location.state || {};
+    const [ amount, setAmount] = useState<number>(previousDetails?.amount ?? 0);
+    const [ method, setMethod] = useState<string>(previousDetails?.method ?? 'card');
+    const [ selectedBank, setSelectedBank] = useState<string>('');
+    const [ selectedCard, setSelectedCard] = useState<string>('credit-card');
+    const [ selectedOnlineBank, setSelectedOnlineBank] = useState<string>('Metrobank');
+    const [ selectedOnlineOTC, setSelectedOnlineOTC] = useState<string>('');
     const [ selectedOnlineWallet, setSelectedOnlineWallet] = useState<string>('');
-    const [ processingFee, _setProcessingFee]              = useState<string | null>('');
-    const { merchant_username }                            = useParams();
+    const [ processingFee, _setProcessingFee] = useState<string | null>('');
+    const { merchant_username } = useParams();
     
+    // const [ creditCardName, setCreditCardName] = useState("");
+    // const [ creditCardNumber, setCreditCardNumber] = useState("");
+    // const [ creditCardExpire, setCreditCardExpire] = useState("");
+    // const [ creditCardCVV, setCreditCardCVV] = useState("");
+
     const [ onlineSelectedDevice, setOnlineSelectedDevice] = useState("desktop");
 
-    const [ creditCardName, setCreditCardName]     = useState("");
-    const [ creditCardNumber, setCreditCardNumber] = useState("");
-    const [ creditCardExpire, setCreditCardExpire] = useState("");
-    const [ creditCardCVV, setCreditCardCVV]       = useState("");
-
-    const [debitCardName, setDebitCardName]     = useState("");
-    const [debitCardNumber, setDebitCardNumber] = useState("");
-    const [debitCardExpire, setDebitCardExpire] = useState("");
-    const [debitCardCVV, setDebitCardCVV]       = useState("");
+    // const [debitCardName, setDebitCardName] = useState("");
+    // const [debitCardNumber, setDebitCardNumber] = useState("");
+    // const [debitCardExpire, setDebitCardExpire] = useState("");
+    // const [debitCardCVV, setDebitCardCVV] = useState("");
 
 
-    const [prepaidCardName, setPrepaidCardName]     = useState("");
-    const [prepaidCardNumber, setPrepaidCardNumber] = useState("");
-    const [prepaidCardExpire, setPrepaidCardExpire] = useState("");
-    const [prepaidCardCVV, setPrepaidCardCVV]       = useState("");
-
-    const [email, setEmail]                         = useState("");
-    const [mobile, setMobile]                       = useState("");
-    const [cardStreetLineOne, setCardStreetLineOne] = useState("");
-    const [cardStreetLineTwo, setCardStreetLineTwo] = useState("");
-    const [cardCity, setCardCity]                   = useState("");
-    const [cardProvince, setCardProvince]           = useState("");
-    const [cardPostalCode, setCardPostalCode]       = useState(""); 
-
-    const [countries, setCountries] = useState<Country[]>([]);
-    const [mobileCode, setMobileCode] = useState("");
-    const [cardType, setCardType] = useState("");
-
-    const getCardState = () => {
-     switch (selectedCard) {
-        case "credit-card":
-        return {
-            name: creditCardName,
-            setName: setCreditCardName,
-            number: creditCardNumber,
-            setNumber: setCreditCardNumber,
-            email: email,
-            setEmail: setEmail,
-            mobile: mobile,
-            setMobile: setMobile,
-            expire: creditCardExpire,
-            setExpire: setCreditCardExpire,
-            cvv: creditCardCVV,
-            setCvv: setCreditCardCVV,
-            streetLineOne: cardStreetLineOne,
-            setStreetLineOne: setCardStreetLineOne,
-            streetLineTwo: cardStreetLineTwo,
-            setStreetLineTwo: setCardStreetLineTwo,
-            city: cardCity,
-            setCity: setCardCity,
-            province: cardProvince,
-            setProvince: setCardProvince,
-            postalCode: cardPostalCode,
-            setPostalCode: setCardPostalCode,
-            cardType: cardType,
-            setCardType: setCardType,
-        };
-
-        case "debit-card":
-        return {
-            name: debitCardName,
-            setName: setDebitCardName,
-            number: debitCardNumber,
-            setNumber: setDebitCardNumber,
-            email: email,
-            setEmail: setEmail,
-            mobile: mobile,
-            setMobile: setMobile,
-            expire: debitCardExpire,
-            setExpire: setDebitCardExpire,
-            cvv: debitCardCVV,
-            setCvv: setDebitCardCVV,
-            streetLineOne: cardStreetLineOne,
-            setStreetLineOne: setCardStreetLineOne,
-            streetLineTwo: cardStreetLineTwo,
-            setStreetLineTwo: setCardStreetLineTwo,
-            city: cardCity,
-            setCity: setCardCity,
-            province: cardProvince,
-            setProvince: setCardProvince,
-            postalCode: cardPostalCode,
-            setPostalCode: setCardPostalCode,
-        };
-
-        case "prepaid-debit-card":
-        return {
-            name: prepaidCardName,
-            setName: setPrepaidCardName,
-            number: prepaidCardNumber,
-            setNumber: setPrepaidCardNumber,
-            email: email,
-            setEmail: setEmail,
-            mobile: mobile,
-            setMobile: setMobile,
-            expire: prepaidCardExpire,
-            setExpire: setPrepaidCardExpire,
-            cvv: prepaidCardCVV,
-            setCvv: setPrepaidCardCVV,
-            streetLineOne: cardStreetLineOne,
-            setStreetLineOne: setCardStreetLineOne,
-            streetLineTwo: cardStreetLineTwo,
-            setStreetLineTwo: setCardStreetLineTwo,
-            city: cardCity,
-            setCity: setCardCity,
-            province: cardProvince,
-            setProvince: setCardProvince,
-            postalCode: cardPostalCode,
-            setPostalCode: setCardPostalCode,
-        };
-
-        default:
-        return {};
-    }
-    };
-
-    const currentCard = getCardState();
-
-    const getCardType = (cardNumber: string): "Visa" | "Mastercard" | "Unknown" => {
-        const cleaned = cardNumber.replace(/\s+/g, ""); // remove spaces
-
-        if (/^4[0-9]{0,15}$/.test(cleaned)) return "Visa";
-        if (/^(5[1-5][0-9]{0,14}|2(2[2-9][0-9]{0,12}|[3-6][0-9]{0,13}|7[01][0-9]{0,12}|720[0-9]{0,12}))$/.test(cleaned)) return "Mastercard";
-
-        return "Unknown";
-    };
+    // const [prepaidCardName, setPrepaidCardName] = useState("");
+    // const [prepaidCardNumber, setPrepaidCardNumber] = useState("");
+    // const [prepaidCardExpire, setPrepaidCardExpire] = useState("");
+    // const [prepaidCardCVV, setPrepaidCardCVV] = useState("");
 
     const [_summaryHeight, setSummaryHeight] = useState<number | undefined>(undefined);
     
@@ -428,7 +267,6 @@ const PaymentPage: React.FC = () => {
     const username            = merchant_username;
     const payment_methods_url = import.meta.env.VITE_PAYMENT_METHODS_URL;
     const merchant_name_url   = import.meta.env.VITE_MERCHANT_URL;
-    const core_base_url       = import.meta.env.VITE_CORE_BASE_URL;
 
     const handleAmountChange = (val: string) => {
         const num = parseInt(val.replace(/\D/g, '')) || 0;
@@ -487,24 +325,9 @@ const PaymentPage: React.FC = () => {
     const [ providerCodePayload, setProviderCodePayload] = useState("mastercard_visa");
     const [ paymentLoading, setPaymentLoading ] = useState (false);
     const [ merchantName, setMerchantName] = useState ("");
-    const [ isLocked, setIsLocked] = useState (false);
     const [ loadingMerchant, setLoadingMerchant] = useState(false);
     const [ merchantError, setMerchantError] = useState<string | null>(null);
     const safePaymentMethods = paymentmethods.map(({ icon, ...rest }) => rest);
-    const [isCvvMasked, setIsCvvMasked] = useState(false);
-    const [isCardInternational, setIsCardInternational] = useState(false);
-    const [nameError, setNameError] = useState<string>("");
-    const [cardError, setCardError] = useState<string>("");
-    const [emailError, setEmailError] = useState<string>("");
-    const [mobileError, setMobileError] = useState<string>("");
-    const [expError, setExpError] = useState<string>("");
-    const [cvvError, setCvvError] = useState<string>("");
-    const [streetOneError, setStreetOneError] = useState<string>("");
-    const [streetTwoError, setStreetTwoError] = useState<string>("");
-    const [cityError, setCityError] = useState<string>("");
-    const [provinceError, setProvinceError] = useState<string>("");
-    const [postalError, setPostalError] = useState<string>("");
-
     // UseEffect for fetching payment methods
     useEffect(() => {
         const controller = new AbortController();
@@ -662,7 +485,7 @@ const PaymentPage: React.FC = () => {
                 const selectedBankData = availableBanks.find(
                     (item: BankTransfer) => item.name === selectedBank
                 );
-                // console.log(selectedBank)
+                console.log(selectedBank)
                 if (selectedBankData) {
                     methodCode   = selectedBankData.method_code;
                     providerCode = selectedBankData.provider_code;
@@ -928,113 +751,6 @@ const PaymentPage: React.FC = () => {
 
     // }, [selectedBank, selectedOnlineBank, selectedOnlineOTC, selectedOnlineWallet, method]);
 
-    // UseEffect for fetching the country codes
-    
-    useEffect(() => {
-
-        if (method !== "card") return;
-
-        fetch(`${core_base_url}/frontend/api/v3/enduser/get/country`, {
-            method: "GET",
-        })
-            .then((response) => {
-                // console.log("Country Code fetch response:", response);
-                return response.json();
-            })
-            .then((data: countryCode) => {
-                const countryList = data.data;
-
-                setCountries(countryList);
-
-                // set PH as default
-                const defaultCountry = countryList.find(c => c.code === "PH");
-                if (defaultCountry) {
-                    setMobileCode(defaultCountry.mobile_code);
-                }
-            })
-            .catch((err) => {
-                console.error("Failed to load country codes:", err);
-            });
-    }, [method]);
-
-    // BIN Checker
-    async function checkBin(cardNumber: string) {
-        try {
-            const response = await fetch(`${api_base_url}/payment-page/bin-lookup?card_number=${cardNumber}`, {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-            });
-
-            if (!response.ok) throw new Error("Failed to check BIN");
-
-            const data: BINCheck = await response.json();
-
-            let finalCardType: string
-
-            if (data["card-type"] === "CREDIT"){
-                finalCardType = "credit_card";
-            }else if (data["card-type"] === "DEBIT"){
-                finalCardType = data["is-prepaid"] ? "prepaid_card" : "debit_card";
-            }else {
-                finalCardType = "NoCardTypeReceived"
-            }
-
-            return {
-                country_code: data["country-code"],
-                cardType: finalCardType
-            };
-        } catch (err) {
-            console.error("BIN check error:", err);
-            return null; // or throw if you want to handle errors in onBlur
-        }
-    }
-
-    // useEffect (() => {
-    //     console.log("International Card: ",isCardInternational)
-    // },[isCardInternational])
-
-    
-    const rawCardNumber = currentCard?.number?.replace(/\s/g, "") ?? "";
-
-    // Card Details Checker to know if the user can proceed
-    const isCardFormValid =
-        currentCard?.name &&
-        rawCardNumber.length >= 13 &&
-        rawCardNumber.length <= 16 &&
-        !nameError &&
-        !cardError &&
-        currentCard?.expire &&
-        !expError &&
-        currentCard?.cvv &&
-        !cvvError &&
-        currentCard?.email &&
-        !emailError &&
-        currentCard?.mobile &&
-        !mobileError &&
-        (
-            !isCardInternational || (
-                currentCard?.streetLineOne &&
-                !streetOneError &&
-                currentCard?.streetLineTwo &&
-                !streetTwoError &&
-                currentCard?.city &&
-                !cityError &&
-                currentCard?.province &&
-                !provinceError &&
-                currentCard?.postalCode &&
-                !postalError
-            )
-    );
-
-    //  ==================
-    //  START OF COMPONENT
-    //  ==================
-    const detectedCardMap: Record<string, string> = {
-        "credit_card": "Credit Card",
-        "debit_card": "Debit Card",
-        "prepaid_card": "Prepaid Card"
-    };
-
     return (
     <>
         {loadingMerchant && (
@@ -1173,7 +889,7 @@ const PaymentPage: React.FC = () => {
                         return (
                             <div
                             key={card.id}
-                            className={`rounded-md text-xs transition-all duration-300 w-full lg:w-[70%] overflow-hidden ${
+                            className={`rounded-md text-xs transition-all duration-300 w-full lg:w-[98%] mx-auto overflow-hidden ${
                                 isSelected
                                 ? "border-[#1B2A27] bg-[#F7F8FA] shadow-sm"
                                 : "border-transparent hover:bg-gray-50"
@@ -1202,455 +918,6 @@ const PaymentPage: React.FC = () => {
                                 </span>
                                 </div>
                             </label>
-
-                                {/* Expandable Card Form */}
-                                {isSelected && (
-                                    <div className="px-6 pb-3 pt-2 border-t border-[#312B5B]">
-                                        <div className="flex justify-between items-center mb-3">
-                                            <h3 className="text-[10px] font-bold text-[#1a1a1a]">
-                                                {card.id.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} Information <span className="text-red-500">*</span>
-                                            </h3>
-
-                                            <div className="flex gap-2">
-                                                {currentCard?.number && getCardType(currentCard.number) === "Visa" && (
-                                                    <img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/visa.svg" alt="Visa" className="h-5" />
-                                                )}
-                                                {currentCard?.number && getCardType(currentCard.number) === "Mastercard" && (
-                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-5" />
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-6 gap-y-3 gap-x-4">
-                                            {/* Full Name */}
-                                            <div className="col-span-3">
-                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Card Holder's Full Name</label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Ann Cruz"
-                                                    value={currentCard?.name ?? ""}
-                                                    onChange={(e) => {
-                                                        currentCard?.setName?.(e.target.value);
-                                                        setNameError(""); // clear error while typing
-                                                    }}
-                                                    onBlur={(e) => {
-                                                        const fullName = e.target.value.trim();
-                                                        const isValid = fullName.split(" ").filter(Boolean).length >= 2; // at least 2 words
-                                                        if (!isValid) {
-                                                            setNameError("Please enter your full name (first and last).");
-                                                        }
-                                                    }}
-                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
-                                                    ${nameError ? "border-red-500" : "border-[#D1D5DB]"}
-                                                    focus:border-[#312B5B]`}
-                                                />
-                                                {nameError && <p className="text-red-500 text-[9px] mt-1">{nameError}</p>}
-                                            </div>
-
-                                            <div className="col-span-3"></div>
-
-                                            {/* Card Number */}
-                                            <div className="col-span-3">
-                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Card Number</label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="4123 4567 8900 0123"
-                                                    value={currentCard?.number ?? ""}
-                                                    maxLength={19}
-                                                    onChange={(e) => {
-                                                        const rawValue = e.target.value.replace(/\D/g, ""); // digits only
-
-                                                        // format into groups of 4
-                                                        const formatted =
-                                                            rawValue.match(/.{1,4}/g)?.join(" ") ?? "";
-
-                                                        currentCard?.setNumber?.(formatted);
-                                                        setCardError(""); // clear error while typing
-
-                                                        // hide international fields if input is empty
-                                                        if (rawValue.length === 0) {
-                                                            setIsCardInternational(false);
-                                                        }
-                                                    }}
-                                                    onBlur={async (e) => {
-                                                        const rawValue = e.target.value.replace(/\s/g, "");
-
-                                                        if (rawValue.length === 0) {
-                                                            setIsCardInternational(false);
-                                                            return;
-                                                        }
-
-                                                        setCardError("");
-
-                                                         try {
-
-                                                            if (rawValue.length >= 6) {
-                                                                
-                                                                // BIN Checker returns normalized string, not BINCheck
-                                                                const binResult = await checkBin(rawValue);
-                                                                const binCardType = binResult?.cardType;
-                                                                const countryCode = binResult?.country_code;
-
-                                                                if (!binCardType || binCardType === "NoCardTypeReceived") {
-                                                                    setCardError("Unable to verify card type.");
-                                                                    return;
-                                                                }
-
-                                                                // Set international state
-                                                                if (countryCode === "PH") {
-                                                                    setIsCardInternational(false);
-                                                                } else {
-                                                                    setIsCardInternational(true);
-                                                                }
-                                                                
-                                                                // Map selectedCard to normalized binCardType
-                                                                let expectedCardType: string;
-                                                                switch (selectedCard) {
-                                                                    case "credit-card":
-                                                                        expectedCardType = "credit_card";
-                                                                        break;
-                                                                    case "debit-card":
-                                                                        expectedCardType = "debit_card";
-                                                                        break;
-                                                                    case "prepaid-debit-card":
-                                                                        expectedCardType = "prepaid_card";
-                                                                        break;
-                                                                    default:
-                                                                        expectedCardType = "";
-                                                                }
-
-
-                                                                // Compare BIN result with expected
-                                                                if (binCardType !== expectedCardType) {
-                                                                    // setCardError(`Selected card type (${selectedCard}) does not match detected card type (${binCardType}).`);
-                                                                    setCardError(`${detectedCardMap[binCardType] ?? binCardType} detected. Please select ${detectedCardMap[binCardType] ?? binCardType}`);
-                                                                    return;
-                                                                }
-
-                                                                currentCard?.setCardType?.(expectedCardType);
-                                                                // console.log("BIN Checker detected card type:", expectedCardType);
-                                                            }
-                                                        } catch (err) {
-                                                            console.error(err);
-                                                            setCardError("Unable to verify card type.");
-                                                            return;
-                                                        }
-
-                                                        if (!/^\d{13,16}$/.test(rawValue)) {
-                                                            setCardError("Card number must be 13-16 digits.");
-                                                            return;
-                                                        }   
-
-                                                        setCardError("");
-                                                    }}
-                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
-                                                    ${cardError ? "border-red-500" : "border-[#D1D5DB]"}
-                                                    focus:border-[#312B5B]`}
-                                                />
-                                                {cardError && (
-                                                    <p className="text-red-500 text-[9px] mt-1">{cardError}</p>
-                                                )}
-                                            </div>
-
-                                            {/* Expiration */}
-                                            <div className="col-span-2">
-                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Expiration Date</label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="MM / YY"
-                                                    value={currentCard?.expire ?? ""}
-                                                    onChange={(e) => {
-                                                        let value = e.target.value.replace(/\D/g, ""); // remove non-digits
-                                                        if (value.length > 4) value = value.slice(0, 4); // limit to 4 digits MMYY
-
-                                                        // auto-insert " / " after the first two digits
-                                                        let formatted = value;
-                                                        if (value.length > 2) {
-                                                            formatted = value.slice(0, 2) + " / " + value.slice(2);
-                                                        }
-
-                                                        currentCard?.setExpire?.(formatted);
-                                                        setExpError(""); // clear error while typing
-                                                    }}
-                                                    onBlur={(e) => {
-                                                        const value = e.target.value.trim();
-                                                        const [monthStr, yearStr] = value.split("/").map(s => s.trim());
-                                                        const month = parseInt(monthStr, 10);
-                                                        const year = parseInt(yearStr, 10);
-
-                                                        const now = new Date();
-                                                        const currentYear = now.getFullYear() % 100; // YY
-                                                        const currentMonth = now.getMonth() + 1; // 1–12
-
-                                                        if (
-                                                            !/^\d{2}\s?\/\s?\d{2}$/.test(value) || // format MM/YY
-                                                            month < 1 ||
-                                                            month > 12 ||
-                                                            year < currentYear ||
-                                                            (year === currentYear && month < currentMonth)
-                                                        ) {
-                                                            setExpError("Please enter a valid, non-expired date (MM / YY).");
-                                                        }
-                                                    }}
-                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
-                                                    ${expError ? "border-red-500" : "border-[#D1D5DB]"}
-                                                    focus:border-[#312B5B]`}
-                                                />
-                                                {expError && <p className="text-red-500 text-[9px] mt-1">{expError}</p>}
-                                            </div>
-
-                                            {/* CVV */}
-                                            <div className="col-span-1">
-                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">CVV</label>
-                                                <input
-                                                    type={isCvvMasked ? "password" : "text"}
-                                                    placeholder="3 Digits"
-                                                    value={currentCard?.cvv ?? ""}
-                                                    maxLength={3}
-                                                    onChange={(e) => {
-                                                    // Remove non-digits
-                                                    const digitsOnly = e.target.value.replace(/\D/g, "");
-                                                    currentCard?.setCvv?.(digitsOnly);
-                                                    setCvvError(""); // clear error while typing
-                                                    }}
-                                                    onBlur={(e) => {
-                                                    if (!/^\d{3}$/.test(e.target.value)) {
-                                                        setCvvError("CVV must be 3 digits.");
-                                                    }
-                                                    setIsCvvMasked(true);
-                                                    }}
-                                                    onFocus={() => setIsCvvMasked(false)}
-                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
-                                                    ${cvvError ? "border-red-500" : "border-[#D1D5DB]"}
-                                                    focus:border-[#312B5B]`}
-                                                />
-                                                {cvvError && <p className="text-red-500 text-[9px] mt-1">{cvvError}</p>}
-                                            </div>
-                                            
-                                            {/* Email */}
-                                            <div className="col-span-3">
-                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Email Address</label>
-                                                <input
-                                                    type="email"
-                                                    placeholder="anncruz@email.com"
-                                                    value={currentCard?.email ?? ""}
-                                                    onChange={(e) => {
-                                                        currentCard?.setEmail?.(e.target.value);
-                                                        setEmailError("");
-                                                    }}
-                                                    onBlur={(e) => {
-                                                        const value = e.target.value.trim();
-                                                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                                                        if (!emailRegex.test(value)) {
-                                                            setEmailError("Please enter a valid email address.");
-                                                        }
-                                                    }}
-                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
-                                                    ${emailError ? "border-red-500" : "border-[#D1D5DB]"}
-                                                    focus:border-[#312B5B]`}
-                                                />
-                                                {emailError && <p className="text-red-500 text-[9px] mt-1">{emailError}</p>}
-                                            </div>
-
-                                            {/* Mobile */}
-                                            <div className="col-span-3">
-                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Mobile Number</label>
-
-                                                <div className="flex gap-2">
-                                                    {/* Country Code Select */}
-                                                    <select
-                                                        value={mobileCode}
-                                                        onChange={(e) => setMobileCode(e.target.value)}
-                                                        className="max-w-[50px] bg-transparent border-b border-[#D1D5DB] outline-none text-[11px] font-semibold text-black focus:border-[#312B5B]"
-                                                    >
-                                                        {countries.map((country) => (
-                                                            <option
-                                                                key={country.id}
-                                                                value={country.mobile_code}
-                                                            >
-                                                                ({country.mobile_code}) {country.currency || country.name}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-
-                                                    <input
-                                                        type="text"
-                                                        placeholder="9123456789"
-                                                        value={currentCard?.mobile ?? ""}
-                                                        onChange={(e) => {
-                                                            const digits = e.target.value.replace(/\D/g, "");
-                                                            currentCard?.setMobile?.(digits);
-                                                            setMobileError("");
-                                                        }}
-                                                        onBlur={(e) => {
-                                                            const value = e.target.value;
-                                                            if (/^\d{0}$/.test(value)) {
-                                                                setMobileError("Mobile number is required");
-                                                            }else if (/^\d{1,9}$/.test(value)) {
-                                                                setMobileError("Incomplete Mobile Number");
-                                                            }
-                                                        }}
-                                                        maxLength={11}
-                                                        className={`flex-1 max-w-[90px] md:max-w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
-                                                        ${mobileError ? "border-red-500" : "border-[#D1D5DB]"}
-                                                        focus:border-[#312B5B]`}
-                                                    />
-                                                </div>
-
-                                                {mobileError && (
-                                                    <p className="text-red-500 text-[9px] mt-1">{mobileError}</p>
-                                                )}
-                                            </div>
-  
-                                            { isCardInternational && (
-                                            <>
-                                             {/* Country Selector Button */}
-                                            <div className="col-span-6 py-1">
-                                                <button className="w-full flex items-center justify-center gap-2 py-1 border border-[#D1D5DB] rounded bg-[#F9FAFB] text-[11px] font-medium text-gray-700">
-                                                    <img src="https://flagcdn.com/w20/us.png" alt="US Flag" className="w-4 h-auto" />
-                                                    US - United States
-                                                </button>
-                                            </div>
-                                            
-                                            {/* Address Street Line 1 */}
-                                            
-
-                                            <div className="col-span-3">
-                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Card Street Line 1</label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Enter Street Line 1"
-                                                    value={currentCard?.streetLineOne ?? ""}
-                                                    onChange={(e) => {
-                                                        currentCard?.setStreetLineOne?.(e.target.value);
-                                                        setStreetOneError(""); // clear error while typing
-                                                    }}
-                                                    onBlur={(e) => {
-                                                        if (!e.target.value.trim()) {
-                                                            setStreetOneError("Street address is required.");
-                                                        }
-                                                    }}
-                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
-                                                    ${streetOneError ? "border-red-500" : "border-[#D1D5DB]"}
-                                                    focus:border-[#312B5B]`}
-                                                />
-                                                {streetOneError && <p className="text-red-500 text-[9px] mt-1">{streetOneError}</p>}
-                                            </div>
-
-                                            {/* Address Street Line 2 */}
-                                            <div className="col-span-3">
-                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Card Street Line 2</label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Enter Street Line 2"
-                                                    value={currentCard?.streetLineTwo ?? ""}
-                                                    onChange={(e) => currentCard?.setStreetLineTwo?.(e.target.value)}
-                                                    onBlur={(e) => {
-                                                        if (!e.target.value.trim()) {
-                                                            setStreetTwoError("Street address is required.");
-                                                        }
-                                                    }}
-                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
-                                                    ${streetTwoError ? "border-red-500" : "border-[#D1D5DB]"}
-                                                    focus:border-[#312B5B]`}
-                                                />
-                                                {streetTwoError && <p className="text-red-500 text-[9px] mt-1">{streetTwoError}</p>}
-                                            </div>
-                                             {/* Card City  */}
-                                            <div className="col-span-3">
-                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Card City</label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Enter Card City"
-                                                    value={currentCard?.city ?? ""}
-                                                    onChange={(e) => {
-                                                        currentCard?.setCity?.(e.target.value);
-                                                        setCityError(""); // clear error while typing
-                                                    }}
-                                                    onBlur={(e) => {
-                                                        const value = e.target.value.trim();
-                                                        // Required & only letters/spaces
-                                                        if (!value) {
-                                                            setCityError("City is required.");
-                                                        } else if (!/^[a-zA-Z\s]+$/.test(value)) {
-                                                            setCityError("City can only contain letters and spaces.");
-                                                        } else {
-                                                            setCityError("");
-                                                        }
-                                                    }}
-                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
-                                                    ${cityError ? "border-red-500" : "border-[#D1D5DB]"}
-                                                    focus:border-[#312B5B]`}
-                                                />
-                                                {cityError && <p className="text-red-500 text-[9px] mt-1">{cityError}</p>}
-                                            </div>
-
-                                            {/* Card Postal Province  */}
-                                            <div className="col-span-3">
-                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Card Postal Province</label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Enter Card Postal Province"
-                                                    value={currentCard?.province ?? ""}
-                                                    onChange={(e) => {
-                                                        currentCard?.setProvince?.(e.target.value);
-                                                        setProvinceError(""); // clear error while typing
-                                                    }}
-                                                    onBlur={(e) => {
-                                                        const value = e.target.value.trim();
-                                                        // Required & only letters/spaces
-                                                        if (!value) {
-                                                            setProvinceError("Province is required.");
-                                                        } else if (!/^[a-zA-Z\s]+$/.test(value)) {
-                                                            setProvinceError("Province can only contain letters and spaces.");
-                                                        } else {
-                                                            setProvinceError("");
-                                                        }
-                                                    }}
-                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
-                                                    ${provinceError ? "border-red-500" : "border-[#D1D5DB]"}
-                                                    focus:border-[#312B5B]`}
-                                                />
-                                                {provinceError && <p className="text-red-500 text-[9px] mt-1">{provinceError}</p>}
-                                            </div>
-
-                                            <div className="col-span-3">
-                                                <label className="block text-[9px] text-[#6F7282] mb-0.5">Card Postal Code</label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Enter Card Postal Code"
-                                                    value={currentCard?.postalCode ?? ""}
-                                                    onChange={(e) => {
-                                                        currentCard?.setPostalCode?.(e.target.value);
-                                                        setPostalError(""); // clear error while typing
-                                                    }}
-                                                    onBlur={(e) => {
-                                                        const value = e.target.value.trim();
-                                                        if (!value) {
-                                                            setPostalError("Postal code is required.");
-                                                        } else if (!/^\d{4,6}$/.test(value)) {
-                                                            setPostalError("Postal code must be 4 to 6 digits.");
-                                                        } else {
-                                                            setPostalError("");
-                                                        }
-                                                    }}
-                                                    className={`w-full bg-transparent border-b py-0.5 outline-none text-[11px] font-semibold text-black
-                                                    ${postalError ? "border-red-500" : "border-[#D1D5DB]"}
-                                                    focus:border-[#312B5B]`}
-                                                />
-                                                {postalError && <p className="text-red-500 text-[9px] mt-1">{postalError}</p>}
-                                            </div>
-                                            </>
-                                            )}
-
-                                            <div className="col-span-6 mt-2">
-                                                <p className="text-[9px] text-[#6F7282] text-center leading-tight opacity-80">
-                                                    Make sure your browser displays Pulse Tech. Be careful with your card details when using a publicly available computer, or using public WIFI.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         );
                         })}
@@ -2018,16 +1285,13 @@ const PaymentPage: React.FC = () => {
 
             <div className="mt-0 md:mt-4 lg:mt-6 w-full flex justify-center items-center">
                 <button
-                    disabled={amount <= 99 || paymentLoading || isLocked || (method === "card" && !isCardFormValid)}
+                    disabled={amount <= 99 || paymentLoading}
                     // onClick={handlePaymentSuccess}
                     onClick={ async () => {
-                        setIsLocked(true);
+
                         const response = await handlePaymentSuccess();
 
-                        if (!response) {
-                            setIsLocked(false); // unlock if failed
-                            return;
-                        } // exit if failed
+                        if (!response) return; // exit if failed
 
                         setCurrentStep(2);
 
@@ -2059,7 +1323,7 @@ const PaymentPage: React.FC = () => {
                         navigate(`/${merchant_username}/confirm`, { state: { paymentDetails } });
                     }}
                             className={`w-1/2 md:w-1/2 lg:w-1/3 py-2 rounded font-bold text-sm transition-all duration-300 shadow-md transform flex justify-center items-center
-                    ${amount > 99 && !paymentLoading && !isLocked && (method !== "card" || isCardFormValid)
+                    ${amount > 99 && !paymentLoading
                         ? 'bg-[#202122] text-[#75EEA5] cursor-pointer hover:from-[#1B2A27] hover:to-[#0182B5] hover:shadow-lg hover:-translate-y-0.5 active:scale-95'
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
