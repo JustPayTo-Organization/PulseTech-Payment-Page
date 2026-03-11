@@ -487,6 +487,7 @@ const PaymentPage: React.FC = () => {
     const [ providerCodePayload, setProviderCodePayload] = useState("mastercard_visa");
     const [ paymentLoading, setPaymentLoading ] = useState (false);
     const [ merchantName, setMerchantName] = useState ("");
+    const [ isLocked, setIsLocked] = useState (false);
     const [ loadingMerchant, setLoadingMerchant] = useState(false);
     const [ merchantError, setMerchantError] = useState<string | null>(null);
     const safePaymentMethods = paymentmethods.map(({ icon, ...rest }) => rest);
@@ -2016,13 +2017,16 @@ const PaymentPage: React.FC = () => {
 
             <div className="mt-0 md:mt-4 lg:mt-6 w-full flex justify-center items-center">
                 <button
-                    disabled={amount <= 99 || paymentLoading || (method === "card" && !isCardFormValid)}
+                    disabled={amount <= 99 || paymentLoading || isLocked || (method === "card" && !isCardFormValid)}
                     // onClick={handlePaymentSuccess}
                     onClick={ async () => {
-
+                        setIsLocked(true);
                         const response = await handlePaymentSuccess();
 
-                        if (!response) return; // exit if failed
+                        if (!response) {
+                            setIsLocked(false); // unlock if failed
+                            return;
+                        } // exit if failed
 
                         setCurrentStep(2);
 
@@ -2054,7 +2058,7 @@ const PaymentPage: React.FC = () => {
                         navigate(`/${merchant_username}/confirm`, { state: { paymentDetails } });
                     }}
                             className={`w-1/2 md:w-1/2 lg:w-1/3 py-2 rounded font-bold text-sm transition-all duration-300 shadow-md transform flex justify-center items-center
-                    ${amount > 99 && !paymentLoading && (method !== "card" || isCardFormValid)
+                    ${amount > 99 && !paymentLoading && !isLocked && (method !== "card" || isCardFormValid)
                         ? 'bg-[#202122] text-[#75EEA5] cursor-pointer hover:from-[#1B2A27] hover:to-[#0182B5] hover:shadow-lg hover:-translate-y-0.5 active:scale-95'
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
