@@ -108,8 +108,14 @@ const Confirm: React.FC = () => {
                                 <span className="font-medium">₱{Number(paymentDetails.paymentResponse?.fees?.processing_fee).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             </div>
                             <div className="flex justify-between text-[#064e3b] text-xs">
-                                <span>System Fee</span>
-                                <span className="font-medium">₱{Number(paymentDetails.paymentResponse?.fees.system_fee).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                { paymentDetails.paymentResponse?.fees.system_fee  && 
+                                    (
+                                        <>
+                                            <span>System Fee</span>
+                                            <span className="font-medium">₱{Number(paymentDetails.paymentResponse?.fees.system_fee).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                        </>
+                                    )
+                                }
                             </div>
                         </div>
 
