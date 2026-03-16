@@ -116,8 +116,15 @@ const SuccessModal: React.FC<ModalProps>= ({paymentSummary, merchantName, paymen
                             <span className="font-medium">₱{Number(paymentSummary.fees.processing_fee).toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-[#064e3b] text-xs ">
-                            <span>System Fee</span>
-                            <span className="font-medium">₱{Number(paymentSummary.fees.system_fee).toFixed(2)}</span>
+                            {/* Optional System fee in receipt */}
+                            { paymentSummary.fees.system_fee && 
+                                (
+                                    <>
+                                    <span>System Fee</span>
+                                    <span className="font-medium">₱{Number(paymentSummary.fees.system_fee).toFixed(2)}</span>
+                                    </>
+                                )
+                            }
                         </div>
                     </div>
 

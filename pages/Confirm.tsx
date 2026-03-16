@@ -101,11 +101,15 @@ const Confirm: React.FC = () => {
                             {/* UI Style Update: Text colors from Purple to Dark Green */}
                             <div className="flex justify-between text-[#064e3b] text-xs">
                                 <span>Sub Total</span>
-                                <span className="font-medium">{Number(paymentDetails.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                <span className="font-medium">₱{Number(paymentDetails.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             </div>
                             <div className="flex justify-between text-[#064e3b] text-xs">
                                 <span>Processing Fee</span>
                                 <span className="font-medium">₱{Number(paymentDetails.paymentResponse?.fees?.processing_fee).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            </div>
+                            <div className="flex justify-between text-[#064e3b] text-xs">
+                                <span>Other charges may apply</span>
+                                <span className="font-medium">-</span>
                             </div>
                             <div className="flex justify-between text-[#064e3b] text-xs">
                                 { paymentDetails.paymentResponse?.fees.system_fee  && 
