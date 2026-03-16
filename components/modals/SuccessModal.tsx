@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 // import { useSearchParams } from "react-router-dom";
 import { 
 // Facebook, 
@@ -47,6 +47,12 @@ const SuccessModal: React.FC<ModalProps>= ({paymentSummary, merchantName, paymen
     const { merchant_username } = useParams();
     
     const receiptRef = useRef<HTMLDivElement>(null);
+
+    useEffect (() => {
+        console.log(Number(paymentSummary?.amount))
+        console.log(Number(paymentSummary?.fees?.processing_fee))
+        console.log(Number(paymentSummary?.fees?.system_fee))
+    },[totalAmount])
 
     if (!paymentSummary) return null;
 
