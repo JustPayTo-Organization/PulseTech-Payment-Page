@@ -54,7 +54,7 @@ const SuccessModal: React.FC<ModalProps>= ({paymentSummary, merchantName, paymen
         console.log(Number(paymentSummary?.amount))
         console.log(Number(paymentSummary?.fees?.processing_fee))
         console.log(Number(paymentSummary?.fees?.system_fee))
-    },[totalAmount])
+    },[totalAmount, paymentSummary?.amount, paymentSummary?.fees?.processing_fee, paymentSummary?.fees?.system_fee])
 
     if (!paymentSummary) return null;
 
