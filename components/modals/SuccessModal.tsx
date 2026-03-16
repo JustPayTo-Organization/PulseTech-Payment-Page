@@ -125,6 +125,10 @@ const SuccessModal: React.FC<ModalProps>= ({paymentSummary, merchantName, paymen
                                 )
                             }
                         </div>
+                        <div className="flex justify-between text-[#064e3b] text-xs ">
+                            <span>Other charges (Local/International Fee)</span>
+                            <span className="font-medium">Coming Soon!</span>
+                        </div>
                     </div>
 
                     {/* UI Style Update: Border and Text color to Dark Green/Slate */}
