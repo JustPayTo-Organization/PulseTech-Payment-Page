@@ -50,7 +50,7 @@ const SuccessModal: React.FC<ModalProps>= ({paymentSummary, merchantName, paymen
 
     if (!paymentSummary) return null;
 
-    const totalAmount = (Number(paymentSummary?.amount)) + (Number(paymentSummary?.fees?.processing_fee)) + (Number(paymentSummary?.fees?.system_fee))
+    const totalAmount = (Number(paymentSummary?.amount)) + (Number(paymentSummary?.fees?.processing_fee)) + (Number(paymentSummary?.fees?.system_fee) || 0)
 
     const handleDownload = async () => {
         if (!receiptRef.current) return;
