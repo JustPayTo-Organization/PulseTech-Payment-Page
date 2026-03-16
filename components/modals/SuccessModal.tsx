@@ -109,7 +109,7 @@ const SuccessModal: React.FC<ModalProps>= ({paymentSummary, merchantName, paymen
                         {/* UI Style Update: Row text colors to Dark Green */}
                         <div className="flex justify-between text-[#064e3b] text-xs">
                             <span>Sub Total</span>
-                            <span className="font-medium">{(paymentSummary.amount).toFixed(2)}</span>
+                            <span className="font-medium">₱{(paymentSummary.amount).toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-[#064e3b] text-xs ">
                             <span>Processing Fee</span>
