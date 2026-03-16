@@ -48,16 +48,9 @@ const SuccessModal: React.FC<ModalProps>= ({paymentSummary, merchantName, paymen
     
     const receiptRef = useRef<HTMLDivElement>(null);
 
-    const totalAmount = (Number(paymentSummary?.amount)) + (Number(paymentSummary?.fees?.processing_fee)) + (Number(paymentSummary?.fees?.system_fee) || 0)
-    
-    useEffect (() => {
-        console.log(Number(paymentSummary?.amount))
-        console.log(Number(paymentSummary?.fees?.processing_fee))
-        console.log(Number(paymentSummary?.fees?.system_fee))
-    },[totalAmount, paymentSummary?.amount, paymentSummary?.fees?.processing_fee, paymentSummary?.fees?.system_fee])
-
     if (!paymentSummary) return null;
 
+    const totalAmount = (Number(paymentSummary?.amount)) + (Number(paymentSummary?.fees?.processing_fee)) + (Number(paymentSummary?.fees?.system_fee) || 0)
 
     const handleDownload = async () => {
         if (!receiptRef.current) return;
