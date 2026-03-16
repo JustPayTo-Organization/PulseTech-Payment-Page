@@ -136,7 +136,7 @@ function StatusPage() {
     // --- Render the correct modal based on status ---
     if (loading) {
         return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#FFFFFF] to-[#D0BBE6]">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#FFFFFF] to-[#C9FCE9]">
                 <Spinner />
             </div>
         );
