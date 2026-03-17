@@ -109,8 +109,16 @@ const FailedModal: React.FC <ModalProps> = ({paymentSummary, merchantName}) => {
                         </h2>
                         <p className="text-xs md:text-sm text-[#064e3b]">was not completed.</p>
 
-                        <span className="text-[#064e3b]">Reference No.</span>
-                        <span className="text-[#064e3b] font-medium break-all ml-2">{paymentSummary.reference_id}</span>
+                        <div className="mt-4 flex flex-col items-center md:items-start gap-1">
+                        <span className="text-[10px] uppercase tracking-wider text-[#064e3b]/70 font-semibold">
+                            Reference Number
+                        </span>
+                        <div className="px-3 py-1 bg-[#ecfdf5] border border-[#10b981]/20 rounded-full">
+                            <span className="text-sm font-mono text-[#064e3b] break-all">
+                            {paymentSummary.reference_id}
+                            </span>
+                        </div>
+                        </div>
                     </div>
 
                     {/* Status Info */}
