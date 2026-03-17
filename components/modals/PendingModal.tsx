@@ -173,6 +173,8 @@ const PendingModal: React.FC <ModalProps> = ({paymentSummary, merchantName }) =>
                         <h2 className="text-4xl font-bold text-black my-2">
                             ₱ {Number(totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </h2>
+                         <span className="text-[#064e3b] text-xs md:text-sm">Reference No.</span>
+                        <span className="text-[#064e3b] text-xs md:text-sm font-medium break-all ml-2">{paymentSummary.reference_id}</span>
                     </div>
 
                     {/* Date Display */}
