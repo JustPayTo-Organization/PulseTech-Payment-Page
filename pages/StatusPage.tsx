@@ -18,7 +18,7 @@ type redirectResponse = {
     amount: number,
     fees: {
         system_fee: string,
-        processing_fee: string,
+        sending: string,
     },
     paid_at: string | null,
     payment_method: {
