@@ -108,6 +108,9 @@ const FailedModal: React.FC <ModalProps> = ({paymentSummary, merchantName}) => {
                             ₱ {Number(totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </h2>
                         <p className="text-xs md:text-sm text-[#064e3b]">was not completed.</p>
+
+                        <span className="text-[#064e3b]">Reference No.</span>
+                        <span className="text-[#064e3b] font-medium break-all ml-2">{paymentSummary.reference_id}</span>
                     </div>
 
                     {/* Status Info */}
