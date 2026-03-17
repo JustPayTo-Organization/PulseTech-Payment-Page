@@ -18,7 +18,7 @@ type redirectResponse = {
     amount: number,
     fees: {
         system_fee: string,
-        processing_fee: string,
+        sending: string,
     },
     paid_at: string | null,
     payment_method: {
@@ -136,7 +136,7 @@ function StatusPage() {
     // --- Render the correct modal based on status ---
     if (loading) {
         return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#FFFFFF] to-[#D0BBE6]">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#FFFFFF] to-[#C9FCE9]">
                 <Spinner />
             </div>
         );

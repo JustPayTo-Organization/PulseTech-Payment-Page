@@ -20,7 +20,7 @@ type redirectResponse = {
     amount: number,
     fees: {
         system_fee: string,
-        processing_fee: string,
+        sending: string,
     },
     paid_at: string | null,
     payment_method: {
@@ -48,7 +48,7 @@ const FailedModal: React.FC <ModalProps> = ({paymentSummary, merchantName}) => {
     
     const { merchant_username } = useParams();
     
-    const totalAmount = (Number(paymentSummary?.amount)) + (Number(paymentSummary?.fees?.processing_fee)) + (Number(paymentSummary?.fees?.system_fee))
+    const totalAmount = (Number(paymentSummary?.amount)) + (Number(paymentSummary?.fees?.sending)) + (Number(paymentSummary?.fees?.system_fee))
 
     /* UI Style Update: Text color from Purple to Dark Green */
     if (!paymentSummary) return <p className="text-center mt-10 text-[#064e3b]">No payment details available.</p>;
@@ -99,15 +99,16 @@ const FailedModal: React.FC <ModalProps> = ({paymentSummary, merchantName}) => {
 
                     {/* Amount Display */}
                     <div className="mb-8">
-                        {/* UI Style Update: Span color to Emerald Green */}
                         <p className="text-xs md:text-sm text-[#064e3b]">
                             Your payment to <span className="text-[#10b981] font-medium cursor-pointer">{merchantName}</span>
                         </p>
-                        {/* UI Style Update: Text color to Dark Green */}
                         <h2 className="text-3xl font-bold text-[#064e3b] my-1">
                             ₱ {Number(totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </h2>
                         <p className="text-xs md:text-sm text-[#064e3b]">was not completed.</p>
+
+                        <span className="text-[#064e3b] text-xs md:text-sm">Reference No.</span>
+                        <span className="text-[#064e3b] text-xs md:text-sm font-medium break-all ml-2">{paymentSummary.reference_id}</span>
                     </div>
 
                     {/* Status Info */}

@@ -616,7 +616,7 @@ const PaymentPage: React.FC = () => {
 
             
             const subTotal = Number(amount); // from your state/input
-            const processingFee = Number(data.fees.processing_fee);
+            const processingFee = Number(data.fees.sending);
             const systemFee = Number(data.fees.system_fee);
 
             const totalAmount = subTotal + processingFee + systemFee;

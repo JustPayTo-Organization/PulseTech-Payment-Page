@@ -26,7 +26,7 @@ type redirectResponse = {
     amount: number,
     fees: {
         system_fee: string,
-        processing_fee: string,
+        sending: string,
     },
     paid_at: string | null,
     payment_method: {
@@ -50,7 +50,7 @@ const SuccessModal: React.FC<ModalProps>= ({paymentSummary, merchantName, paymen
 
     if (!paymentSummary) return null;
 
-    const totalAmount = (Number(paymentSummary?.amount)) + (Number(paymentSummary?.fees?.processing_fee)) + (Number(paymentSummary?.fees?.system_fee))
+    const totalAmount = (Number(paymentSummary?.amount)) + (Number(paymentSummary?.fees?.sending)) + (Number(paymentSummary?.fees?.system_fee) || 0)
 
     const handleDownload = async () => {
         if (!receiptRef.current) return;
@@ -109,15 +109,22 @@ const SuccessModal: React.FC<ModalProps>= ({paymentSummary, merchantName, paymen
                         {/* UI Style Update: Row text colors to Dark Green */}
                         <div className="flex justify-between text-[#064e3b] text-xs">
                             <span>Sub Total</span>
-                            <span className="font-medium">{(paymentSummary.amount).toFixed(2)}</span>
+                            <span className="font-medium">₱{(paymentSummary.amount).toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-[#064e3b] text-xs ">
                             <span>Processing Fee</span>
-                            <span className="font-medium">₱{Number(paymentSummary.fees.processing_fee).toFixed(2)}</span>
+                            <span className="font-medium">₱{Number(paymentSummary.fees.sending).toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-[#064e3b] text-xs ">
-                            <span>System Fee</span>
-                            <span className="font-medium">₱{Number(paymentSummary.fees.system_fee).toFixed(2)}</span>
+                            {/* Optional System fee in receipt */}
+                            { paymentSummary.fees.system_fee && 
+                                (
+                                    <>
+                                    <span>System Fee</span>
+                                    <span className="font-medium">₱{Number(paymentSummary.fees.system_fee).toFixed(2)}</span>
+                                    </>
+                                )
+                            }
                         </div>
                     </div>
 

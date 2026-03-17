@@ -22,7 +22,7 @@ type redirectResponse = {
     amount: number,
     fees: {
         system_fee: string,
-        processing_fee: string,
+        sending: string,
     },
     paid_at: string | null,
     payment_method: {
@@ -122,7 +122,7 @@ const PendingModal: React.FC <ModalProps> = ({paymentSummary, merchantName }) =>
     //         fetchData();
     // }, [merchant_username, reference_id]);
     
-    const totalAmount = (Number(paymentSummary?.amount)) + (Number(paymentSummary?.fees?.processing_fee)) + (Number(paymentSummary?.fees?.system_fee))
+    const totalAmount = (Number(paymentSummary?.amount)) + (Number(paymentSummary?.fees?.sending)) + (Number(paymentSummary?.fees?.system_fee))
 
     // Fallback if no state is passed
     if (!paymentSummary) return <p className="text-center mt-10">No payment details available.</p>;
@@ -173,6 +173,8 @@ const PendingModal: React.FC <ModalProps> = ({paymentSummary, merchantName }) =>
                         <h2 className="text-4xl font-bold text-black my-2">
                             ₱ {Number(totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </h2>
+                         <span className="text-[#064e3b] text-xs md:text-sm">Reference No.</span>
+                        <span className="text-[#064e3b] text-xs md:text-sm font-medium break-all ml-2">{paymentSummary.reference_id}</span>
                     </div>
 
                     {/* Date Display */}
