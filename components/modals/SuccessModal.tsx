@@ -187,13 +187,13 @@ const SuccessModal: React.FC<ModalProps>= ({paymentSummary, merchantName, paymen
                 <button
                     onClick={handleDownload} 
                     /* UI Style Update: Border/Text to Dark Green, Hover to Light Emerald */
-                    className="flex w-[60%] md:w-full mx-auto items-center justify-center gap-1 border border-[#064e3b] text-[#064e3b] hover:shadow-lg hover:-translate-y-0.5 active:scale-95 font-semibold py-2.5 px-4 rounded-lg hover:bg-emerald-50 transition-colors sm text-xs">
+                    className="w-full max-w-[240px] mx-auto items-center justify-center gap-1 border border-[#064e3b] text-[#064e3b] hover:shadow-lg hover:-translate-y-0.5 active:scale-95 font-semibold py-2.5 px-4 rounded-lg hover:bg-emerald-50 transition-colors sm text-xs">
                         <Printer size={14} />
                         Print Receipt
                 </button>
                 <button 
                         /* UI Style Update: Gradient to Dark Green/Emerald */
-                        className="w-[60%] md:w-full mx-auto max-w-60 bg-[#202122] text-[#75EEA5] cursor-pointer hover:from-[#1B2A27] hover:shadow-lg hover:-translate-y-0.5 active:scale-95 font-semibold py-2.5 px-4 rounded-lg transition-all shadow-md text-xs"
+                        className="w-full max-w-[240px] mx-auto bg-[#202122] text-[#75EEA5] cursor-pointer hover:from-[#1B2A27] hover:shadow-lg hover:-translate-y-0.5 active:scale-95 font-semibold py-2.5 px-4 rounded-lg transition-all shadow-md text-xs"
                         onClick={() => navigate(`/${merchant_username}`)}
                     >
                         Make Another Payment
