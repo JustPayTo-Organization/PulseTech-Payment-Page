@@ -51,7 +51,7 @@ const SuccessModal: React.FC<ModalProps>= ({paymentSummary, merchantName, paymen
 
     if (!paymentSummary) return null;
 
-    const totalAmount = (Number(paymentSummary?.amount)) + (Number(paymentSummary?.fees?.sending)) + (Number(paymentSummary?.fees?.system_fee) || 0)
+    const totalAmount = (Number(paymentSummary?.amount)) + (Number(paymentSummary?.fees?.sending)) + (Number(paymentSummary?.fees?.system_fee) || 0) + (Number(paymentSummary?.fees?.international_card) || 0)
 
     const handleDownload = async () => {
         if (!receiptRef.current) return;
@@ -117,8 +117,13 @@ const SuccessModal: React.FC<ModalProps>= ({paymentSummary, merchantName, paymen
                             <span className="font-medium">₱{Number(paymentSummary.fees.sending).toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-[#064e3b] text-xs ">
-                            <span>International Transaction Fee</span>
-                            <span className="font-medium">₱{Number(paymentSummary.fees.international_card).toFixed(2)}</span>
+                            {
+                                paymentSummary.fees.international_card &&
+                                <>
+                                    <span>International Transaction Fee</span>
+                                    <span className="font-medium">₱{Number(paymentSummary.fees.international_card).toFixed(2)}</span>
+                                </>
+                            }
                         </div>
                         <div className="flex justify-between text-[#064e3b] text-xs ">
                             {/* Optional System fee in receipt */}
