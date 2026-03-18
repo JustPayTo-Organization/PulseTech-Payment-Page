@@ -183,7 +183,7 @@ const SuccessModal: React.FC<ModalProps>= ({paymentSummary, merchantName, paymen
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col items-center gap-3 md:gap-5 lg:gap-10 w-full md:pt-10">
+            <div className="flex flex-col items-center gap-3 md:gap-5 w-full md:pt-10">
                 <button
                     onClick={handleDownload} 
                     /* UI Style Update: Border/Text to Dark Green, Hover to Light Emerald */
