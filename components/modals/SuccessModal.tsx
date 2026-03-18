@@ -183,17 +183,17 @@ const SuccessModal: React.FC<ModalProps>= ({paymentSummary, merchantName, paymen
             </div>
 
             {/* Action Buttons */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5 lg:gap-10 w-full md:pt-10">
+            <div className="flex flex-col items-center gap-3 md:gap-5 lg:gap-10 w-full md:pt-10">
                 <button
                     onClick={handleDownload} 
                     /* UI Style Update: Border/Text to Dark Green, Hover to Light Emerald */
-                    className="w-full max-w-[240px] mx-auto items-center justify-center gap-1 border border-[#064e3b] text-[#064e3b] hover:shadow-lg hover:-translate-y-0.5 active:scale-95 font-semibold py-2.5 px-4 rounded-lg hover:bg-emerald-50 transition-colors sm text-xs">
+                    className="flex items-center justify-center gap-1 w-[220px] border border-[#064e3b] text-[#064e3b] hover:shadow-lg hover:-translate-y-0.5 active:scale-95 font-semibold py-2.5 px-4 rounded-lg hover:bg-emerald-50 transition-colors text-xs">
                         <Printer size={14} />
                         Print Receipt
                 </button>
                 <button 
                         /* UI Style Update: Gradient to Dark Green/Emerald */
-                        className="w-full max-w-[240px] mx-auto bg-[#202122] text-[#75EEA5] cursor-pointer hover:from-[#1B2A27] hover:shadow-lg hover:-translate-y-0.5 active:scale-95 font-semibold py-2.5 px-4 rounded-lg transition-all shadow-md text-xs"
+                        className="w-[220px] bg-[#202122] text-[#75EEA5] cursor-pointer hover:shadow-lg hover:-translate-y-0.5 active:scale-95 font-semibold py-2.5 px-4 rounded-lg transition-all shadow-md text-xs"
                         onClick={() => navigate(`/${merchant_username}`)}
                     >
                         Make Another Payment
