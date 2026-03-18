@@ -26,6 +26,7 @@ type redirectResponse = {
     amount: number,
     fees: {
         system_fee: string,
+        international_card: string,
         sending: string,
     },
     paid_at: string | null,
@@ -114,6 +115,10 @@ const SuccessModal: React.FC<ModalProps>= ({paymentSummary, merchantName, paymen
                         <div className="flex justify-between text-[#064e3b] text-xs ">
                             <span>Processing Fee</span>
                             <span className="font-medium">₱{Number(paymentSummary.fees.sending).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between text-[#064e3b] text-xs ">
+                            <span>International Transaction Fee</span>
+                            <span className="font-medium">₱{Number(paymentSummary.fees.international_card).toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-[#064e3b] text-xs ">
                             {/* Optional System fee in receipt */}
