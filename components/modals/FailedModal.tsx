@@ -20,6 +20,7 @@ type redirectResponse = {
     amount: number,
     fees: {
         system_fee: string,
+        international_card: string,
         sending: string,
     },
     paid_at: string | null,
@@ -48,7 +49,7 @@ const FailedModal: React.FC <ModalProps> = ({paymentSummary, merchantName}) => {
     
     const { merchant_username } = useParams();
     
-    const totalAmount = (Number(paymentSummary?.amount) || 0) + (Number(paymentSummary?.fees?.sending) || 0) + (Number(paymentSummary?.fees?.system_fee) || 0)
+    const totalAmount = (Number(paymentSummary?.amount) || 0) + (Number(paymentSummary?.fees?.sending) || 0) + (Number(paymentSummary?.fees?.international_card) || 0)
     
     /* UI Style Update: Text color from Purple to Dark Green */
     if (!paymentSummary) return <p className="text-center mt-10 text-[#064e3b]">No payment details available.</p>;
