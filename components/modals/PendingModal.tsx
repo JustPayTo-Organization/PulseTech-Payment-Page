@@ -124,13 +124,6 @@ const PendingModal: React.FC <ModalProps> = ({paymentSummary, merchantName }) =>
     
     const totalAmount = (Number(paymentSummary?.amount) || 0) + (Number(paymentSummary?.fees?.sending) || 0 ) + (Number(paymentSummary?.fees?.system_fee) || 0 )
 
-    useEffect (() => {
-            console.log("DEBUG=")
-            console.log(paymentSummary?.amount)
-            console.log(paymentSummary?.fees?.sending)
-            console.log(paymentSummary?.fees?.system_fee)
-        },[paymentSummary?.amount,paymentSummary?.fees?.sending,paymentSummary?.fees?.system_fee ])
-        
     // Fallback if no state is passed
     if (!paymentSummary) return <p className="text-center mt-10">No payment details available.</p>;
 
