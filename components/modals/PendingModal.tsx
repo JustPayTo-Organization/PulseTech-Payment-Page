@@ -122,7 +122,7 @@ const PendingModal: React.FC <ModalProps> = ({paymentSummary, merchantName }) =>
     //         fetchData();
     // }, [merchant_username, reference_id]);
     
-    const totalAmount = (Number(paymentSummary?.amount)) + (Number(paymentSummary?.fees?.sending)) + (Number(paymentSummary?.fees?.system_fee))
+    const totalAmount = (Number(paymentSummary?.amount) || 0) + (Number(paymentSummary?.fees?.sending) || 0 ) + (Number(paymentSummary?.fees?.system_fee) || 0 )
 
     // Fallback if no state is passed
     if (!paymentSummary) return <p className="text-center mt-10">No payment details available.</p>;
