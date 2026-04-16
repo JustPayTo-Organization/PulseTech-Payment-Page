@@ -110,18 +110,37 @@ const SuccessModal: React.FC<ModalProps>= ({paymentSummary, merchantName, paymen
                         {/* UI Style Update: Row text colors to Dark Green */}
                         <div className="flex justify-between text-[#064e3b] text-xs">
                             <span>Sub Total</span>
-                            <span className="font-medium">₱{(paymentSummary.amount).toFixed(2)}</span>
+                            <span className="font-medium">₱{(paymentSummary.amount.toLocaleString('en-PH', {
+                                            minimumFractionDigits: 2, 
+                                            maximumFractionDigits: 2
+                                            }
+                                        )
+                                    )
+                                }
+                            </span>
                         </div>
                         <div className="flex justify-between text-[#064e3b] text-xs ">
                             <span>Processing Fee</span>
-                            <span className="font-medium">₱{Number(paymentSummary.fees.sending).toFixed(2)}</span>
+                            <span className="font-medium">₱{Number(paymentSummary.fees.sending ?? 0 ).toLocaleString('en-PH', {
+                                        minimumFractionDigits: 2, 
+                                        maximumFractionDigits: 2
+                                        }
+                                    )
+                                }
+                            </span>
                         </div>
                         <div className="flex justify-between text-[#064e3b] text-xs ">
                             {
                                 paymentSummary.fees.international_card &&
                                 <>
                                     <span>International Transaction Fee</span>
-                                    <span className="font-medium">₱{Number(paymentSummary.fees.international_card).toFixed(2)}</span>
+                                    <span className="font-medium">₱{Number(paymentSummary.fees.international_card ?? 0).toLocaleString('en-PH',{
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2
+                                                }
+                                            )
+                                        }
+                                    </span>
                                 </>
                             }
                         </div>
@@ -131,7 +150,13 @@ const SuccessModal: React.FC<ModalProps>= ({paymentSummary, merchantName, paymen
                                 (
                                     <>
                                     <span>System Fee</span>
-                                    <span className="font-medium">₱{Number(paymentSummary.fees.system_fee).toFixed(2)}</span>
+                                    <span className="font-medium">₱{Number(paymentSummary.fees.system_fee ?? 0).toLocaleString('en-PH',{
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2
+                                                }
+                                            )
+                                        }
+                                    </span>
                                     </>
                                 )
                             }
@@ -141,7 +166,7 @@ const SuccessModal: React.FC<ModalProps>= ({paymentSummary, merchantName, paymen
                     {/* UI Style Update: Border and Text color to Dark Green/Slate */}
                     <div className="flex justify-between items-center p-3 border-t border-dashed border-[#A0AEC0] pt-2 mx-3">
                         <span className="text-[#064e3b] font-bold">Amount Paid</span>
-                        <span className="text-[#064e3b] font-bold">₱ {Number(totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        <span className="text-[#064e3b] font-bold">₱ {Number(totalAmount).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                 
                     <div className=" border-[#A0AEC0] border-t border-dashed pt-2 mb-3 mx-3"/>
