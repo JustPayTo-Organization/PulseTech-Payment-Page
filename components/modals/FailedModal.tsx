@@ -104,7 +104,7 @@ const FailedModal: React.FC <ModalProps> = ({paymentSummary, merchantName}) => {
                             Your payment to <span className="text-[#10b981] font-medium cursor-pointer">{merchantName}</span>
                         </p>
                         <h2 className="text-3xl font-bold text-[#064e3b] my-1">
-                            ₱ {Number(totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            ₱ {Number(totalAmount).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </h2>
                         <p className="text-xs md:text-sm text-[#064e3b]">was not completed.</p>
 
